@@ -1,0 +1,688 @@
+/* =========================================================
+   AVER адмінка: макет. Кольори, шрифт, кнопки, поля, вкладки
+   беруться з ../styles.css (ті самі токени, що й на сайті).
+   Mobile-first: спершу телефон, далі @media для більших екранів.
+   ========================================================= */
+
+.adm {
+  --side-w: 256px;
+  --top-h: 56px;
+  --tabbar-h: 64px;
+  min-height: 100svh;
+  background: var(--white);
+}
+
+.adm h1,
+.adm h2,
+.adm h3 {
+  font-weight: 300;
+}
+
+.adm b {
+  font-weight: 400;
+  color: var(--ink);
+}
+
+/* ---------- завантаження ---------- */
+.adm-boot {
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: var(--gutter);
+}
+
+.adm-boot .logo {
+  animation: adm-pulse 1400ms var(--ease) infinite alternate;
+}
+
+@keyframes adm-pulse {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+
+/* ---------- вхід ---------- */
+.adm-login {
+  min-height: 100svh;
+  display: grid;
+}
+
+.adm-login__side {
+  display: none;
+}
+
+.adm-login__main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s3);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--s5) var(--gutter);
+}
+
+.adm-login__logo {
+  margin-bottom: var(--s4);
+}
+
+.adm-login h1 {
+  margin-bottom: var(--s3);
+  font-size: clamp(2.6rem, 9vw, 4.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+}
+
+.adm-login .form {
+  gap: var(--s4);
+}
+
+/* кнопки у формах за розміром тексту, як на сайті */
+.adm .form > .btn {
+  justify-self: start;
+}
+
+.adm-login__error {
+  padding: 12px var(--s3);
+  background: var(--pink);
+  font-size: 14px;
+}
+
+.adm-login__demo {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: var(--s4);
+  padding: var(--s3);
+  background: var(--pink-soft);
+  font-size: 14px;
+  color: var(--ink-75);
+}
+
+.adm-login__demo .icon {
+  margin-top: 3px;
+}
+
+.adm-login__demo p {
+  font-size: 14px;
+}
+
+.adm-login__back {
+  align-self: flex-start;
+  margin-top: var(--s2);
+  font-size: 14px;
+  color: var(--ink-75);
+}
+
+@media (min-width: 900px) {
+  .adm-login {
+    grid-template-columns: 1.2fr 1fr;
+  }
+  .adm-login__side {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--s5) 48px;
+  }
+  .adm-login__tag {
+    font-size: clamp(1.8rem, 3vw, 2.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 300;
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+  .adm-login__logo {
+    display: none;
+  }
+}
+
+/* поле пароля з кнопкою "показати" */
+.field--reveal {
+  position: relative;
+}
+
+.field--reveal input {
+  padding-right: 52px;
+}
+
+.field__reveal {
+  position: absolute;
+  right: 0;
+  top: 26px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-75);
+  cursor: pointer;
+}
+
+.field__reveal:hover {
+  color: var(--ink);
+}
+
+.field__hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-55);
+}
+
+.field.is-invalid .field__hint {
+  display: none;
+}
+
+.field.is-invalid input,
+.field.is-invalid textarea,
+.field.is-invalid select {
+  border-bottom: 2px solid var(--ink);
+}
+
+/* ---------- оболонка ---------- */
+.adm-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  height: var(--top-h);
+  padding: 0 var(--gutter);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--hair);
+}
+
+.adm-top__label {
+  font-size: 11px;
+}
+
+.adm-top__actions {
+  display: flex;
+  margin-left: auto;
+}
+
+.adm-iconlink {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 320ms var(--ease), transform 320ms var(--ease);
+}
+
+.adm-iconlink:hover {
+  background: var(--pink);
+  transform: translateY(-1px);
+}
+
+.adm-side {
+  display: none;
+}
+
+.adm-main {
+  min-width: 0;
+  padding: var(--s4) var(--gutter) calc(var(--tabbar-h) + var(--s5) + env(safe-area-inset-bottom));
+  outline: none;
+}
+
+.adm-view {
+  max-width: 1120px;
+  animation: panel-in 500ms var(--ease) both;
+}
+
+/* нижня панель на телефоні */
+.adm-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 -1px 0 var(--hair);
+}
+
+.adm-tabbar .adm-nav__link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: var(--tabbar-h);
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ink-75);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.adm-tabbar .icon {
+  width: 22px;
+  height: 22px;
+  transition: transform 320ms var(--ease);
+}
+
+.adm-tabbar .adm-nav__link[aria-current="page"],
+.adm-tabbar .adm-nav__link.is-current {
+  color: var(--ink);
+}
+
+.adm-tabbar .adm-nav__link[aria-current="page"] .icon,
+.adm-tabbar .adm-nav__link.is-current .icon {
+  transform: translateY(-2px);
+}
+
+/* точка під активним пунктом */
+.adm-tabbar .adm-nav__link::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform 320ms var(--ease);
+}
+
+.adm-tabbar .adm-nav__link[aria-current="page"]::after,
+.adm-tabbar .adm-nav__link.is-current::after {
+  transform: none;
+}
+
+.adm-tabbar .adm-badge {
+  position: absolute;
+  top: 6px;
+  left: calc(50% + 6px);
+}
+
+/* лічильник */
+.adm-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* список розділів у шторці «Ще» */
+.adm-more {
+  display: grid;
+}
+
+.adm-more .adm-nav__link,
+.adm-nav .adm-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 0 var(--s3);
+  color: var(--ink-75);
+  text-decoration: none;
+  transition: background-color 320ms var(--ease), color 320ms var(--ease), padding 320ms var(--ease);
+}
+
+.adm-more .adm-nav__link {
+  box-shadow: 0 1px 0 var(--hair);
+}
+
+.adm-nav .adm-nav__link[aria-current="page"] {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.adm-more .adm-nav__link[aria-current="page"] {
+  background: var(--pink-soft);
+  color: var(--ink);
+}
+
+.adm-nav__text {
+  flex: 1;
+}
+
+.adm-more__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  margin-top: var(--s4);
+}
+
+.adm-more__foot .ulink,
+.adm-side__foot .ulink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink-75);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .adm-nav .adm-nav__link:not([aria-current="page"]):hover {
+    padding-left: 22px;
+    color: var(--ink);
+  }
+}
+
+@media (min-width: 960px) {
+  .adm-app {
+    display: grid;
+    grid-template-columns: var(--side-w) minmax(0, 1fr);
+    min-height: 100svh;
+  }
+  .adm-top,
+  .adm-tabbar {
+    display: none;
+  }
+  .adm-side {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    height: 100svh;
+    padding: var(--s4) var(--s3);
+    overflow-y: auto;
+  }
+  .adm-side > .logo,
+  .adm-side > .label {
+    padding: 0 var(--s3);
+  }
+  .adm-side > .label {
+    margin: -6px 0 var(--s4);
+    font-size: 11px;
+  }
+  .adm-nav {
+    display: grid;
+    gap: 2px;
+  }
+  .adm-side__foot {
+    display: grid;
+    gap: 0;
+    margin-top: auto;
+    padding: var(--s3) var(--s3) 0;
+    box-shadow: 0 -1px 0 var(--hair);
+  }
+  .adm-side__user {
+    font-size: 13px;
+    color: var(--ink-55);
+  }
+  .adm-main {
+    padding: var(--s5) 48px var(--s6);
+  }
+}
+
+/* ---------- заголовок розділу ---------- */
+.adm-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s5);
+}
+
+.adm-title {
+  font-size: clamp(2.2rem, 5vw, 3.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  outline: none;
+}
+
+.adm-lead {
+  margin-top: var(--s3);
+  color: var(--ink-75);
+}
+
+.adm-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+/* ---------- блоки ---------- */
+.adm-grid {
+  display: grid;
+  gap: var(--s4);
+}
+
+@media (min-width: 1100px) {
+  .adm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .adm-grid > .adm-panel:first-child {
+    grid-row: span 2;
+  }
+}
+
+.adm-panel {
+  padding: var(--s4) var(--s3);
+  background: var(--pink-soft);
+}
+
+@media (min-width: 640px) {
+  .adm-panel {
+    padding: var(--s4);
+  }
+}
+
+.adm-panel__title {
+  margin-bottom: var(--s3);
+  font-size: clamp(1.35rem, 2vw, 1.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.adm-note {
+  margin-bottom: var(--s4);
+  font-size: 15px;
+  color: var(--ink-75);
+}
+
+.adm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.adm-warn {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: none;
+  margin-bottom: var(--s4);
+  padding: var(--s3);
+  background: var(--pink);
+  font-size: 15px;
+}
+
+.adm-warn .icon {
+  margin-top: 3px;
+}
+
+/* розділ, якого ще немає */
+.adm-soon {
+  display: grid;
+  gap: var(--s2);
+  justify-items: start;
+  padding: var(--s5) var(--s4);
+  background: var(--pink-soft);
+}
+
+.adm-soon .icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: var(--s2);
+  color: var(--accent);
+}
+
+/* кнопка лише з іконкою */
+.btn--icon {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+/* ---------- діалог / шторка ---------- */
+.adm-dialog {
+  width: 100%;
+  max-width: 100%;
+  max-height: 92svh;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+  background: var(--white);
+  color: var(--ink);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.adm-dialog[open] {
+  animation: adm-sheet-in 500ms var(--ease) both;
+}
+
+.adm-dialog::backdrop {
+  background: rgba(59, 43, 48, 0.36);
+  animation: adm-fade 320ms var(--ease) both;
+}
+
+@keyframes adm-sheet-in {
+  from { transform: translateY(40px); opacity: 0; }
+}
+
+@keyframes adm-fade {
+  from { opacity: 0; }
+}
+
+.adm-dialog__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3) var(--gutter);
+  background: var(--white);
+  box-shadow: 0 1px 0 var(--hair);
+}
+
+.adm-dialog__head h2 {
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.adm-dialog__body {
+  padding: var(--s4) var(--gutter);
+}
+
+.adm-dialog__actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s2);
+  padding: var(--s3) var(--gutter) calc(var(--s3) + env(safe-area-inset-bottom));
+  background: var(--white);
+  box-shadow: 0 -1px 0 var(--hair);
+}
+
+@media (min-width: 640px) {
+  .adm-dialog {
+    width: min(560px, calc(100% - 48px));
+    max-height: 86svh;
+    margin: auto;
+  }
+  .adm-dialog--wide {
+    width: min(820px, calc(100% - 48px));
+  }
+  .adm-dialog__head,
+  .adm-dialog__body,
+  .adm-dialog__actions {
+    padding-left: var(--s4);
+    padding-right: var(--s4);
+  }
+}
+
+/* ---------- тост ---------- */
+.adm-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom));
+  z-index: 1000;
+  max-width: calc(100% - 32px);
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 15px;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+  transition: opacity 320ms var(--ease), transform 500ms var(--ease);
+}
+
+.adm-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.adm-toast.is-error {
+  border-radius: 0;
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+@media (min-width: 960px) {
+  .adm-toast {
+    bottom: 32px;
+  }
+  /* по центру робочої області, а не всього вікна (коли видно бокове меню) */
+  .adm-app:not([hidden]) ~ .adm-toast {
+    left: calc(50% + var(--side-w) / 2);
+    bottom: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm *,
+  .adm *::before,
+  .adm *::after,
+  .adm-dialog::backdrop {
+    animation: none !important;
+    transition: none !important;
+  }
+}

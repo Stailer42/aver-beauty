@@ -35,8 +35,14 @@
 
   document.addEventListener("DOMContentLoaded", init);
 
-  function init() {
+  async function init() {
     if (typeof AVER === "undefined") return;
+    try {
+      await AVER.ready;
+    } catch (err) {
+      showError($("[data-service-list]"), "Не вдалося завантажити послуги. Оновіть сторінку або зателефонуйте нам.");
+      return;
+    }
     renderCategories();
     bindNav();
     bindForm();

@@ -148,11 +148,19 @@
     items.forEach((el) => io.observe(el));
   }
 
-  /* ---------- Послуги: вкладки з data.js ---------- */
-  function initServices() {
+  /* ---------- Послуги: вкладки з даних адмінки (data.js) ---------- */
+  async function initServices() {
     const tabsBox = document.querySelector("[data-services-tabs]");
     const panelsBox = document.querySelector("[data-services-panels]");
     if (!tabsBox || !panelsBox || typeof AVER === "undefined") return;
+    try {
+      await AVER.ready;
+    } catch (err) {
+      const p = document.createElement("p");
+      p.textContent = "Не вдалося завантажити перелік послуг. Зателефонуйте нам, і ми все розповімо.";
+      panelsBox.appendChild(p);
+      return;
+    }
 
     AVER.categories.forEach((cat, i) => {
       const tab = document.createElement("button");

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Адмінка: AVER</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#F7E6E9">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400&amp;display=swap">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="admin.css">
+
+  <!-- спільне із сайтом -->
+  <script src="../typo.js" defer></script>
+  <script src="../db-local.js" defer></script>
+  <!-- адмінка -->
+  <script src="auth.js" defer></script>
+  <script src="ui.js" defer></script>
+  <script src="app.js" defer></script>
+  <script src="sections/settings.js" defer></script>
+</head>
+<body class="adm">
+  <!-- Іконки (Lucide) -->
+  <svg width="0" height="0" class="sr-only" aria-hidden="true">
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="m2 2 20 20"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#login-main" data-skip>Перейти до змісту</a>
+
+  <!-- Завантаження -->
+  <div class="adm-boot" data-boot role="status">
+    <span class="logo">AVER</span>
+    <span class="sr-only">Завантаження адмінки</span>
+  </div>
+
+  <!-- Вхід -->
+  <div class="adm-login" data-login hidden>
+    <div class="adm-login__side surface-pink" aria-hidden="true">
+      <span class="logo">AVER</span>
+      <p class="adm-login__tag">Адмінка салону:<br>послуги, записи, тексти</p>
+    </div>
+    <main class="adm-login__main" id="login-main">
+      <a class="logo adm-login__logo" href="../index.html">AVER</a>
+      <span class="label">Адмінка</span>
+      <h1>Вхід</h1>
+      <form class="form" data-login-form novalidate>
+        <div class="field" data-f="login">
+          <label for="l-login">Логін</label>
+          <input id="l-login" name="login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+        </div>
+        <div class="field field--reveal" data-f="password">
+          <label for="l-pass">Пароль</label>
+          <input id="l-pass" name="password" type="password" autocomplete="current-password" required>
+          <button class="field__reveal" type="button" aria-label="Показати пароль" aria-pressed="false" data-reveal><svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg></button>
+        </div>
+        <p class="adm-login__error" data-login-error role="alert" hidden></p>
+        <button class="btn btn--solid" type="submit" data-login-submit>
+          <span class="btn__fill"></span><span class="btn__label">Увійти в&nbsp;адмінку</span>
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </button>
+      </form>
+      <div class="adm-login__demo">
+        <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+        <p>Демо-доступ: логін <b>admin</b>, пароль <b>aver-demo</b>. Дані зберігаються лише у&nbsp;цьому браузері.</p>
+      </div>
+      <a class="ulink adm-login__back" href="../index.html">Повернутися на&nbsp;сайт</a>
+    </main>
+  </div>
+
+  <!-- Адмінка -->
+  <div class="adm-app" data-app hidden>
+    <header class="adm-top">
+      <a class="logo" href="#bookings" aria-label="AVER, адмінка: на першу сторінку">AVER</a>
+      <span class="label adm-top__label">Адмінка</span>
+      <div class="adm-top__actions">
+        <a class="adm-iconlink" href="../index.html" target="_blank" rel="noopener" aria-label="Відкрити сайт у новій вкладці" title="Відкрити сайт"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></a>
+        <button class="adm-iconlink" type="button" data-logout aria-label="Вийти" title="Вийти"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg></button>
+      </div>
+    </header>
+
+    <aside class="adm-side surface-pink">
+      <a class="logo" href="#bookings" aria-label="AVER, адмінка: на першу сторінку">AVER</a>
+      <span class="label">Адмінка</span>
+      <nav class="adm-nav" aria-label="Розділи адмінки" data-nav-side></nav>
+      <div class="adm-side__foot">
+        <p class="adm-side__user" data-user></p>
+        <a class="ulink" href="../index.html" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Відкрити сайт</a>
+        <button class="ulink adm-side__logout" type="button" data-logout><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Вийти</button>
+      </div>
+    </aside>
+
+    <main class="adm-main" id="adm-main" tabindex="-1" data-view></main>
+
+    <nav class="adm-tabbar" aria-label="Розділи адмінки" data-nav-bottom></nav>
+  </div>
+
+  <noscript><p class="empty">Адмінка працює лише з увімкненим JavaScript.</p></noscript>
+</body>
+</html>
