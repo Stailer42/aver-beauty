@@ -6,7 +6,7 @@
  * зручний для сторінок. Тестові дані для першого запуску: seed.js.
  *
  * Сторінки чекають на AVER.ready, а потім беруть:
- *   AVER.categories, AVER.services, AVER.hours, AVER.slotStep, AVER.daysAhead
+ *   AVER.categories, AVER.services, AVER.masters, AVER.hours, AVER.slotStep, AVER.daysAhead
  *   AVER.getBusySlots(dateISO, categoryId)  -> зайняті проміжки
  *   AVER.saveBooking(booking)               -> зберегти запис
  */
@@ -18,6 +18,7 @@ const AVER = {
   leadMin: 60,
   categories: [],
   services: [],
+  masters: [],
   formatPrice: AVERText.formatPrice,
   formatDuration: AVERText.formatDuration,
 };
@@ -65,6 +66,18 @@ AVER.ready = (async function load() {
       from: !!s.price_from,
       options: s.options || [],
     }));
+
+  // Майстри для блоку «Команда» (і для запису на етапі 3)
+  AVER.masters = await Promise.all(visibleMasters.map(async (m) => ({
+    id: m.id,
+    name: m.name,
+    role: m.role || "",
+    specialty: m.specialty || "",
+    experience: m.experience_years || 0,
+    photo: await AVERDB.fileUrl(m.photo),
+    serviceIds: m.service_ids || [],
+    workDays: m.work_days || [],
+  })));
 
   // Категорії без жодної видимої послуги не показуємо
   AVER.categories = visibleCats

@@ -84,7 +84,9 @@ create table if not exists bookings (
   service_id   text references services (id) on delete set null,
   service_name text not null,                             -- знімок назви на момент запису
   options_text text not null default '',
-  master_id    text not null references masters (id) on delete restrict,
+  -- майстра видалили: старі записи лишаються в історії без майстра
+  -- (адмінка не дає видалити майстра, поки в нього є майбутні записи)
+  master_id    text references masters (id) on delete set null,
   date         date not null,                             -- день у часі салону (Київ)
   start_min    int  not null check (start_min between 0 and 1439),
   duration_min int  not null check (duration_min > 0),

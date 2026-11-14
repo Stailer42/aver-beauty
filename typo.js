@@ -65,7 +65,28 @@
     return "tel:+" + String(text || "").replace(/\D/g, "");
   }
 
-  const api = { NB, nbsp, plural, formatPrice, formatDuration, formatPhone, phoneHref };
+  const DAYS_SHORT = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+  const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]; // тиждень з понеділка
+
+  // [1,2,3,4,5,6] -> "Пн–Сб"; [1,3,5] -> "Пн, Ср, Пт"; [1,2,3,5,6] -> "Пн–Ср, Пт, Сб"
+  function dayRanges(days) {
+    const set = new Set((days || []).map(Number));
+    const runs = [];
+    let run = [];
+    WEEK_ORDER.forEach((d) => {
+      if (set.has(d)) run.push(d);
+      else if (run.length) {
+        runs.push(run);
+        run = [];
+      }
+    });
+    if (run.length) runs.push(run);
+    return runs
+      .map((r) => (r.length >= 3 ? DAYS_SHORT[r[0]] + "–" + DAYS_SHORT[r[r.length - 1]] : r.map((d) => DAYS_SHORT[d]).join(", ")))
+      .join(", ");
+  }
+
+  const api = { NB, nbsp, plural, formatPrice, formatDuration, formatPhone, phoneHref, dayRanges, DAYS_SHORT, WEEK_ORDER };
   root.AVERText = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

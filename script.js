@@ -18,18 +18,29 @@
     if (e.persisted) root.classList.remove("is-leaving");
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     requestAnimationFrame(() => root.classList.add("is-ready"));
 
     initPageTransitions();
     initHeaderAndScroll();
     initMenu();
-    initReveal();
-    initServices();
     initActiveNav();
     initSalon();
     initReviews();
+
+    // блоки з даних адмінки малюємо до анімацій появи, щоб нові елементи теж "виринали"
+    const ok = await dataReady();
+    initServices(ok);
+    initTeam(ok);
+    initReveal();
   });
+
+  // Дані з бази (data.js). Якщо не вдалося або занадто довго, лишається HTML-розмітка сторінки.
+  function dataReady() {
+    if (typeof AVER === "undefined" || !AVER.ready) return Promise.resolve(false);
+    const timeout = new Promise((res) => setTimeout(() => res(false), 2500));
+    return Promise.race([AVER.ready.then(() => true, () => false), timeout]);
+  }
 
   /* ---------- Перехід між сторінками (запасний варіант) ---------- */
   function initPageTransitions() {
@@ -149,13 +160,11 @@
   }
 
   /* ---------- Послуги: вкладки з даних адмінки (data.js) ---------- */
-  async function initServices() {
+  function initServices(ok) {
     const tabsBox = document.querySelector("[data-services-tabs]");
     const panelsBox = document.querySelector("[data-services-panels]");
-    if (!tabsBox || !panelsBox || typeof AVER === "undefined") return;
-    try {
-      await AVER.ready;
-    } catch (err) {
+    if (!tabsBox || !panelsBox) return;
+    if (!ok) {
       const p = document.createElement("p");
       p.textContent = "Не вдалося завантажити перелік послуг. Зателефонуйте нам, і ми все розповімо.";
       panelsBox.appendChild(p);
@@ -194,15 +203,17 @@
           const li = document.createElement("li");
           li.className = "svc";
           li.innerHTML =
-            '<a class="svc__link" data-nav href="booking.html?service=' + encodeURIComponent(s.id) + '">' +
+            '<a class="svc__link' + (s.description ? " has-desc" : "") + '" data-nav href="booking.html?service=' + encodeURIComponent(s.id) + '">' +
             '<span class="svc__name"></span>' +
             '<span class="svc__time"></span>' +
+            (s.description ? '<span class="svc__desc"></span>' : "") +
             '<span class="svc__dots" aria-hidden="true"></span>' +
             '<span class="svc__price"></span>' +
             '<span class="svc__go" aria-hidden="true"><svg class="icon"><use href="#i-arrow-up-right"/></svg></span>' +
             "</a>";
           li.querySelector(".svc__name").textContent = s.name;
           li.querySelector(".svc__time").textContent = AVER.formatDuration(s.min);
+          if (s.description) li.querySelector(".svc__desc").textContent = s.description;
           li.querySelector(".svc__price").textContent = (s.from ? "від " : "") + AVER.formatPrice(s.price);
           li.querySelector("a").setAttribute("aria-label", "Записатися: " + s.name + ", " + (s.from ? "від " : "") + AVER.formatPrice(s.price));
           list.appendChild(li);
@@ -239,6 +250,61 @@
         next.focus();
         select(next);
       }
+    });
+  }
+
+  /* ---------- Команда: майстри з даних адмінки ---------- */
+  function initTeam(ok) {
+    const list = document.querySelector("[data-team]");
+    if (!list || !ok || !AVER.masters.length) return; // інакше лишається розмітка з index.html
+    const T = window.AVERText;
+    list.innerHTML = "";
+    AVER.masters.forEach((m, i) => {
+      const li = document.createElement("li");
+      li.className = "member member--ava rise" + (i % 3 ? " d" + (i % 3) : "");
+      const text = document.createElement("div");
+      text.className = "member__text";
+
+      const ava = document.createElement("span");
+      ava.className = "member__avatar";
+      if (m.photo) {
+        const img = document.createElement("img");
+        img.className = "photo";
+        img.src = m.photo;
+        img.alt = ""; // ім'я написане поруч
+        img.width = 64;
+        img.height = 64;
+        img.loading = "lazy";
+        ava.appendChild(img);
+      } else {
+        ava.setAttribute("aria-hidden", "true");
+        ava.textContent = m.name.trim().split(/\s+/).slice(0, 2).map((w) => w.charAt(0)).join("");
+      }
+      li.appendChild(ava);
+
+      if (m.role) {
+        const role = document.createElement("span");
+        role.className = "label";
+        role.textContent = m.role;
+        text.appendChild(role);
+      }
+      const h3 = document.createElement("h3");
+      h3.textContent = m.name;
+      text.appendChild(h3);
+      if (m.specialty) {
+        const p = document.createElement("p");
+        p.className = "muted";
+        p.textContent = m.specialty;
+        text.appendChild(p);
+      }
+      if (m.experience) {
+        const meta = document.createElement("span");
+        meta.className = "member__meta";
+        meta.textContent = "Досвід " + m.experience + T.NB + T.plural(m.experience, ["рік", "роки", "років"]);
+        text.appendChild(meta);
+      }
+      li.appendChild(text);
+      list.appendChild(li);
     });
   }
 

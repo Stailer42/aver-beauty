@@ -43,6 +43,10 @@
       showError($("[data-service-list]"), "Не вдалося завантажити послуги. Оновіть сторінку або зателефонуйте нам.");
       return;
     }
+    if (!AVER.categories.length) {
+      showError($("[data-service-list]"), "Онлайн-запис тимчасово недоступний. Зателефонуйте нам, і ми запишемо вас.");
+      return;
+    }
     renderCategories();
     bindNav();
     bindForm();
@@ -126,8 +130,9 @@
         li.innerHTML =
           '<label class="choice">' +
           '<input type="radio" name="service">' +
-          '<span class="choice__body">' +
+          '<span class="choice__body' + (s.description ? " has-desc" : "") + '">' +
           '<span class="choice__name"></span><span class="choice__meta"></span>' +
+          (s.description ? '<span class="choice__desc"></span>' : "") +
           '<span class="choice__price"></span><span class="choice__dot" aria-hidden="true"></span>' +
           "</span></label>";
         const input = $("input", li);
@@ -135,6 +140,7 @@
         input.checked = state.service && state.service.id === s.id;
         $(".choice__name", li).textContent = s.name;
         $(".choice__meta", li).textContent = AVER.formatDuration(s.min);
+        if (s.description) $(".choice__desc", li).textContent = s.description;
         $(".choice__price", li).textContent = (s.from ? "від " : "") + AVER.formatPrice(s.price);
         input.addEventListener("change", () => selectService(s.id));
         list.appendChild(li);

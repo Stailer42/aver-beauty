@@ -818,6 +818,21 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   display: none;
 }
 
+/* опис послуги з адмінки (лише якщо заповнений) */
+.svc__desc {
+  grid-column: 1;
+  grid-row: 3;
+  max-width: 56ch;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-75);
+}
+
+.svc__link.has-desc .svc__price,
+.svc__link.has-desc .svc__go {
+  grid-row: 1 / span 3;
+}
+
 .svc__price {
   grid-column: 2;
   grid-row: 1 / span 2;
@@ -855,13 +870,19 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
     transform-origin: left;
     transition: transform 700ms var(--ease), opacity 500ms var(--ease);
   }
-  .svc__price {
+  .svc__price,
+  .svc__link.has-desc .svc__price {
     grid-column: 4;
     grid-row: 1;
   }
-  .svc__go {
+  .svc__go,
+  .svc__link.has-desc .svc__go {
     grid-column: 5;
     grid-row: 1;
+  }
+  .svc__desc {
+    grid-column: 1 / 4;
+    grid-row: 2;
   }
 }
 
@@ -1206,6 +1227,44 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
 .member__meta {
   font-size: 14px;
   color: var(--ink-75);
+}
+
+/* майстер з фото (з адмінки): кругле фото ліворуч, текст праворуч */
+.member--ava {
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--s3);
+}
+
+.member__text {
+  display: grid;
+  gap: var(--s2);
+}
+
+.member__avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--pink);
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  transition: transform 500ms var(--ease);
+}
+
+.member__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) {
+  .member:hover .member__avatar {
+    transform: scale(1.06);
+  }
 }
 
 @media (hover: hover) {
@@ -1630,6 +1689,18 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   grid-column: 2;
   grid-row: 1 / span 2;
   white-space: nowrap;
+}
+
+.choice__desc {
+  grid-column: 1;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-75);
+}
+
+.choice__body.has-desc .choice__price,
+.choice__body.has-desc .choice__dot {
+  grid-row: 1 / span 3;
 }
 
 .choice__dot {

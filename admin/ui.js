@@ -158,6 +158,153 @@
     return api;
   };
 
+  /* Чекбокс у стилі сайту (.check). Повертає { el, input, checked() } */
+  UI.checkbox = function (o) {
+    const input = UI.h("input", { type: "checkbox", name: o.name, checked: !!o.checked, value: o.value });
+    if (o.onChange) input.addEventListener("change", () => o.onChange(input.checked));
+    const el = UI.h("label", { class: "check" + (o.class ? " " + o.class : "") },
+      input,
+      UI.h("span", { class: "check__box" }, UI.icon("check")),
+      UI.h("span", { class: "check__text" }, o.label, o.note ? UI.h("small", { class: "check__note", text: o.note }) : null)
+    );
+    return { el, input, checked: () => input.checked };
+  };
+
+  /* Випадний список. options: [{ value, label }] */
+  UI.select = function (o) {
+    const id = "f" + ++fieldSeq;
+    const select = UI.h("select", { id, name: o.name },
+      o.options.map((opt) => UI.h("option", { value: opt.value, text: opt.label, selected: opt.value === o.value }))
+    );
+    const wrap = UI.h("div", { class: "field field--select" },
+      UI.h("label", { for: id, text: o.label }),
+      select,
+      o.hint ? UI.h("span", { class: "field__hint", text: o.hint }) : null
+    );
+    return { el: wrap, input: select, value: () => select.value };
+  };
+
+  /*
+   * Список рядків з режимом «змінити порядок».
+   * UI.list({
+   *   items, empty: "текст",
+   *   row(item) -> { title, meta, thumb (Node), hidden (bool), hiddenLabel, badge },
+   *   onOpen(item), onToggle(item) [необов'язково], onMove(item, dir) [необов'язково]
+   * })
+   * Повертає { el, setReorder(on) }
+   */
+  UI.list = function (o) {
+    const ul = UI.h("ul", { class: "adm-list" });
+    let reorder = false;
+
+    function draw() {
+      UI.clear(ul);
+      if (!o.items.length) {
+        ul.appendChild(UI.h("li", { class: "adm-list__empty" }, UI.empty(o.empty || "Поки що порожньо.")));
+        return;
+      }
+      o.items.forEach((item, i) => {
+        const r = o.row(item);
+        const tools = UI.h("div", { class: "adm-row__tools" });
+        if (reorder && o.onMove) {
+          tools.append(
+            UI.button({ label: "Вище: " + r.title, icon: "chevron-up", iconOnly: true, small: true, disabled: i === 0, onClick: () => o.onMove(item, -1) }),
+            UI.button({ label: "Нижче: " + r.title, icon: "chevron-down", iconOnly: true, small: true, disabled: i === o.items.length - 1, onClick: () => o.onMove(item, 1) })
+          );
+        } else if (o.onToggle) {
+          const t = UI.button({
+            label: (r.hidden ? "Показати на сайті: " : "Сховати з сайту: ") + r.title,
+            icon: r.hidden ? "eye-off" : "eye",
+            iconOnly: true,
+            small: true,
+            onClick: () => o.onToggle(item),
+          });
+          t.setAttribute("aria-pressed", String(!r.hidden));
+          tools.append(t);
+        }
+        ul.appendChild(UI.h("li", { class: "adm-row" + (r.hidden ? " is-hidden" : "") },
+          UI.h("button", { class: "adm-row__main", type: "button", on: { click: () => o.onOpen(item) }, disabled: reorder },
+            r.thumb || null,
+            UI.h("span", { class: "adm-row__text" },
+              UI.h("span", { class: "adm-row__title" }, r.title, r.hidden ? UI.h("span", { class: "adm-chip", text: r.hiddenLabel || "прихована" }) : null, r.badge || null),
+              r.meta ? UI.h("span", { class: "adm-row__meta", text: r.meta }) : null
+            )
+          ),
+          tools
+        ));
+      });
+    }
+
+    draw();
+    return {
+      el: ul,
+      setItems(items) {
+        o.items = items;
+        draw();
+      },
+      setReorder(on) {
+        reorder = on;
+        draw();
+      },
+    };
+  };
+
+  /*
+   * Стиснути фото в браузері: довша сторона до maxSide, WebP (або JPEG, якщо WebP не вміє).
+   * Повертає { blob, width, height }. Кидає Error з людським текстом.
+   */
+  UI.compressImage = async function (file, maxSide, quality) {
+    maxSide = maxSide || 1600;
+    quality = quality || 0.82;
+    if (!file || !/^image\//.test(file.type)) throw new Error("Це не фото. Оберіть файл JPG, PNG або WebP.");
+    if (file.size > 25 * 1024 * 1024) throw new Error("Файл завеликий (більше 25 МБ).");
+    let bmp;
+    try {
+      bmp = await createImageBitmap(file);
+    } catch (e) {
+      throw new Error("Не вдалося прочитати фото. Спробуйте JPG або PNG.");
+    }
+    const k = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
+    const width = Math.round(bmp.width * k);
+    const height = Math.round(bmp.height * k);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bmp, 0, 0, width, height);
+    if (bmp.close) bmp.close();
+    const toBlob = (type) => new Promise((res) => canvas.toBlob(res, type, quality));
+    let blob = await toBlob("image/webp");
+    if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg");
+    if (!blob) throw new Error("Не вдалося стиснути фото.");
+    return { blob, width, height };
+  };
+
+  // Кругла аватарка: фото або ініціали
+  UI.avatar = function (name, url, size) {
+    const el = UI.h("span", { class: "adm-avatar" + (size === "lg" ? " adm-avatar--lg" : ""), "aria-hidden": "true" });
+    if (url) el.appendChild(UI.h("img", { src: url, alt: "" }));
+    else el.textContent = UI.initials(name);
+    return el;
+  };
+
+  UI.initials = function (name) {
+    return String(name || "")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w.charAt(0).toUpperCase())
+      .join("");
+  };
+
+  // Ціле число з поля; null, якщо порожньо чи не число
+  UI.int = function (value) {
+    const s = String(value).trim().replace(/\s/g, "");
+    if (!/^-?\d+$/.test(s)) return null;
+    return Number(s);
+  };
+
   /* ---------- тости ---------- */
   let toastTimer = 0;
   UI.toast = function (text, kind) {
@@ -178,8 +325,9 @@
   /* ---------- діалоги ---------- */
 
   /*
-   * UI.dialog({ title, body: Node|[Node], actions: [buttons], wide, onClose })
-   * Повертає { el, close() }. На телефоні відкривається знизу як шторка.
+   * UI.dialog({ title, body: Node|[Node], actions: [buttons], wide, onClose, isDirty })
+   * Повертає { el, close(), tryClose() }. На телефоні відкривається знизу як шторка.
+   * isDirty() -> true: перед закриттям (Esc, хрестик, клік повз) спитати, чи викинути зміни.
    */
   UI.dialog = function (o) {
     const titleId = "dlg" + ++fieldSeq;
@@ -196,10 +344,32 @@
     const close = () => {
       if (d.open) d.close();
     };
-    closeBtn.addEventListener("click", close);
-    // клік по затемненню закриває
+    let asking = false;
+    const tryClose = async () => {
+      if (asking) return;
+      if (o.isDirty && o.isDirty()) {
+        asking = true;
+        const ok = await UI.confirm({
+          title: "Закрити без збереження?",
+          text: "Зміни в цій формі буде втрачено.",
+          ok: "Не зберігати",
+          cancel: "Повернутися",
+          danger: true,
+        });
+        asking = false;
+        if (!ok) return;
+      }
+      close();
+    };
+    closeBtn.addEventListener("click", tryClose);
+    // Esc
+    d.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      tryClose();
+    });
+    // клік по затемненню (саме по фону, не по вмісту)
     d.addEventListener("click", (e) => {
-      if (e.target === d) close();
+      if (e.target === d) tryClose();
     });
     d.addEventListener("close", () => {
       d.remove();
@@ -208,7 +378,7 @@
     });
     document.body.appendChild(d);
     d.showModal();
-    return { el: d, close };
+    return { el: d, close, tryClose };
   };
 
   // Підтвердження: await UI.confirm({ title, text, ok: "Видалити", danger: true }) -> true/false
