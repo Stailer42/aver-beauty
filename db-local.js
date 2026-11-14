@@ -16,7 +16,7 @@
   const DB_NAME = "aver-demo";
   const DB_VERSION = 1;
   // Збільшуємо, коли змінюється структура тестових даних: стара демо-база перезапишеться
-  const SEED_VERSION = 1;
+  const SEED_VERSION = 2;
 
   const TABLES = [
     "meta", "users", "settings", "closures", "categories", "services",

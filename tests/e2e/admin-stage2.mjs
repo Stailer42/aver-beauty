@@ -1,7 +1,7 @@
 /*
  * Етап 2: послуги й майстри в адмінці → головна й форма запису.
  *   node tests/e2e/admin-stage2.mjs [папка-для-скриншотів]
- * Сервер: python3 -m http.server 8765
+ * Сервер: python3 serve.py 8765
  */
 import { mkdirSync } from "node:fs";
 import { launch } from "./cdp.mjs";

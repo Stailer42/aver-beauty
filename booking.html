@@ -26,6 +26,7 @@
 
   <script src="script.js"></script>
   <script src="typo.js" defer></script>
+  <script src="schedule.js" defer></script>
   <script src="db-local.js" defer></script>
   <script src="data.js" defer></script>
   <script src="booking.js" defer></script>
@@ -112,7 +113,7 @@
               </div>
               <div class="field">
                 <label for="f-comment">Коментар, необов'язково</label>
-                <textarea id="f-comment" name="comment" rows="3" placeholder="Наприклад, бажаний майстер"></textarea>
+                <textarea id="f-comment" name="comment" rows="3" placeholder="Наприклад, побажання до процедури"></textarea>
               </div>
               <div data-field="consent">
               <label class="check">
@@ -135,7 +136,7 @@
             </svg>
             <h2 id="done-title" tabindex="-1">Дякуємо,<br><span data-done-name></span>!</h2>
             <p data-done-text></p>
-            <p class="muted">Номер запису: <span data-done-id></span>. Демо-режим: запис збережено лише у&nbsp;цьому браузері, обраний час тепер позначено як&nbsp;зайнятий.</p>
+            <p class="muted">Номер запису: <span data-done-id></span>. Демо-режим: запис збережено лише у&nbsp;цьому браузері. Його вже видно в&nbsp;адмінці, а&nbsp;обраний час став зайнятим.</p>
             <div class="done__actions">
               <a class="btn btn--solid" href="index.html" data-nav>
                 <span class="btn__fill"></span><span class="btn__label">Повернутися на&nbsp;головну</span>
@@ -165,6 +166,7 @@
           <dl>
             <div><dt>Процедура</dt><dd data-sum="service">не обрано</dd></div>
             <div><dt>Деталі</dt><dd data-sum="options">не обрано</dd></div>
+            <div><dt>Майстер</dt><dd data-sum="master">не обрано</dd></div>
             <div><dt>Дата</dt><dd data-sum="date">не обрано</dd></div>
             <div><dt>Час</dt><dd data-sum="time">не обрано</dd></div>
             <div><dt>Тривалість</dt><dd data-sum="duration">не обрано</dd></div>

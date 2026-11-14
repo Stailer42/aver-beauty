@@ -32,8 +32,32 @@
     const ok = await dataReady();
     initServices(ok);
     initTeam(ok);
+    initHours(ok);
     initReveal();
   });
+
+  /* ---------- Години роботи з розкладу адмінки: футер і дані для Google ---------- */
+  function initHours(ok) {
+    if (!ok || !AVER.hoursLines) return;
+    const box = document.querySelector("[data-hours]");
+    if (box) {
+      box.textContent = "";
+      AVER.hoursLines().forEach((line, i) => {
+        if (i) box.appendChild(document.createElement("br"));
+        box.appendChild(document.createTextNode(line));
+      });
+    }
+    const ld = document.querySelector('script[type="application/ld+json"]');
+    if (ld) {
+      try {
+        const data = JSON.parse(ld.textContent);
+        data.openingHours = AVER.openingHours();
+        ld.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        /* зіпсований JSON-LD: лишаємо як є */
+      }
+    }
+  }
 
   // Дані з бази (data.js). Якщо не вдалося або занадто довго, лишається HTML-розмітка сторінки.
   function dataReady() {

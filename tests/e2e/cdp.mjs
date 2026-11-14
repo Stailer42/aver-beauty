@@ -60,6 +60,10 @@ export async function launch() {
       msg.error ? rej(new Error(msg.error.message)) : res(msg.result);
     } else if (msg.method) {
       if (msg.method === "Runtime.exceptionThrown") logs.push("EXCEPTION: " + (msg.params.exceptionDetails.exception?.description || msg.params.exceptionDetails.text));
+      // помилки мережі ("Failed to load resource: net::ERR_...") приходять сюди
+      if (msg.method === "Log.entryAdded" && msg.params.entry.level === "error") {
+        logs.push("LOG: " + msg.params.entry.text + (msg.params.entry.url ? " " + msg.params.entry.url : ""));
+      }
       if (msg.method === "Runtime.consoleAPICalled" && ["error", "warning"].includes(msg.params.type)) {
         logs.push(msg.params.type.toUpperCase() + ": " + msg.params.args.map((a) => a.value ?? a.description).join(" "));
       }
@@ -85,6 +89,7 @@ export async function launch() {
 
   await send("Page.enable");
   await send("Runtime.enable");
+  await send("Log.enable");
 
   const api = {
     send,
@@ -113,8 +118,12 @@ export async function launch() {
       await sleep(150);
     },
     // Виконати вираз у сторінці (з await), повернути значення
-    async eval(expression) {
-      const r = await send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
+    async eval(expression, timeout = 20000) {
+      let timer;
+      const limit = new Promise((_, rej) => {
+        timer = setTimeout(() => rej(new Error("eval завис довше за " + timeout / 1000 + " с: " + expression.slice(0, 120))), timeout);
+      });
+      const r = await Promise.race([send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }), limit]).finally(() => clearTimeout(timer));
       if (r.exceptionDetails) throw new Error("eval: " + (r.exceptionDetails.exception?.description || r.exceptionDetails.text));
       return r.result.value;
     },

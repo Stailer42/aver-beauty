@@ -1,7 +1,7 @@
 /*
  * Етап 1: вхід, сесія, налаштування адмінки.
  *   node tests/e2e/admin-stage1.mjs [папка-для-скриншотів]
- * Сервер: python3 -m http.server 8765
+ * Сервер: python3 serve.py 8765
  */
 import { mkdirSync } from "node:fs";
 import { launch } from "./cdp.mjs";
@@ -75,7 +75,7 @@ await b.waitFor(`!document.querySelector("[data-login]").hidden`);
 await login("Admin ", "aver-demo"); // регістр і пробіл у логіні не заважають
 await b.waitFor(`!document.querySelector("[data-app]").hidden`, 10000);
 check("правильний пароль відкриває адмінку", await visible("[data-app]"));
-check("перший розділ: Записи (заглушка етапу 3)", (await text(".adm-title")) === "Записи" && (await text(".adm-soon")).includes("етапі 3"));
+check("перший розділ: Записи", (await text(".adm-title")) === "Записи" && !(await text(".adm-soon")));
 check("нижня панель видима на телефоні", await visible(".adm-tabbar"));
 check("360px: немає горизонтального скролу (адмінка)", await noHScroll());
 

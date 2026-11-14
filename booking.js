@@ -1,7 +1,8 @@
 /*
  * AVER: логіка сторінки онлайн-запису.
  * Кроки: 1 процедура → 2 деталі → 3 дата й час → 4 контакти → успіх.
- * Дані й "база" беруться з data.js (AVER.services, AVER.getBusySlots, AVER.saveBooking).
+ * Дані й "база" беруться з data.js (AVER.services, AVER.freeSlots, AVER.saveBooking).
+ * У кроці 2 можна обрати майстра або "будь-якого": тоді час показується, якщо вільний хоч хтось.
  */
 
 (function () {
@@ -23,6 +24,7 @@
     maxStep: 1,
     service: null, // об'єкт послуги
     options: {}, // { groupId: indexOfChoice }
+    master: null, // id майстра або null = будь-який
     date: null, // "2026-11-18"
     time: null, // хвилини від початку доби
     shownTotal: 0, // число, яке зараз на екрані (для анімації ціни)
@@ -43,7 +45,7 @@
       showError($("[data-service-list]"), "Не вдалося завантажити послуги. Оновіть сторінку або зателефонуйте нам.");
       return;
     }
-    if (!AVER.categories.length) {
+    if (!bookableCats().length) {
       showError($("[data-service-list]"), "Онлайн-запис тимчасово недоступний. Зателефонуйте нам, і ми запишемо вас.");
       return;
     }
@@ -53,15 +55,29 @@
 
     // Прийшли з головної за посиланням на конкретну послугу: ?service=manicure
     const preset = new URLSearchParams(location.search).get("service");
-    const service = AVER.services.find((s) => s.id === preset);
+    const service = bookable().find((s) => s.id === preset);
     if (service) {
       selectCategory(service.cat);
       selectService(service.id);
       goTo(2);
     } else {
-      selectCategory(AVER.categories[0].id);
+      selectCategory(bookableCats()[0].id);
     }
     updateSummary();
+  }
+
+  // Онлайн можна записатися лише на послуги, які виконує хоч один майстер
+  function bookable() {
+    return AVER.services.filter((s) => s.bookable);
+  }
+
+  function bookableCats() {
+    return AVER.categories.filter((c) => bookable().some((s) => s.cat === c.id));
+  }
+
+  function masterName(id) {
+    const m = AVER.masters.find((x) => x.id === id);
+    return m ? m.name : "";
   }
 
   /* ---------- Утиліти ---------- */
@@ -104,7 +120,7 @@
   /* ---------- Крок 1: процедура ---------- */
   function renderCategories() {
     const box = $("[data-cat-tabs]");
-    AVER.categories.forEach((cat) => {
+    bookableCats().forEach((cat) => {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "tab";
@@ -123,7 +139,7 @@
     $$("[data-cat-tabs] .tab").forEach((t) => t.setAttribute("aria-pressed", String(t.dataset.cat === catId)));
     const list = $("[data-service-list]");
     list.innerHTML = "";
-    AVER.services
+    bookable()
       .filter((s) => s.cat === catId)
       .forEach((s) => {
         const li = document.createElement("li");
@@ -155,6 +171,8 @@
     if (changed) {
       state.options = {};
       s.options.forEach((g) => (state.options[g.id] = 0));
+      // обраний майстер може не виконувати нову послугу
+      if (state.master && !s.masterIds.includes(state.master)) state.master = null;
       // інша тривалість/категорія: раніше обраний час може вже не підходити
       state.time = null;
       state.maxStep = 2;
@@ -172,59 +190,56 @@
     const s = state.service;
     if (!s) return;
 
-    if (!s.options.length) {
-      const p = document.createElement("p");
-      p.className = "empty";
-      p.textContent = "Для процедури «" + s.name + "» додаткові деталі не потрібні. Переходьте до вибору часу.";
-      box.appendChild(p);
-      return;
-    }
+    // майстер: «будь-який» або конкретний із тих, хто виконує послугу
+    const masters = AVER.mastersFor(s.id);
+    const items = [{ label: "Будь-який майстер", note: "", value: null }].concat(
+      masters.map((m) => ({ label: m.name, note: "", value: m.id }))
+    );
+    box.appendChild(pillGroup("Майстер", "master", items, items.findIndex((x) => x.value === state.master), (item) => {
+      if (state.master === item.value) return;
+      state.master = item.value;
+      state.time = null; // в іншого майстра інший вільний час
+      state.maxStep = Math.min(state.maxStep, 3);
+      updateSummary();
+    }));
 
     s.options.forEach((group) => {
-      const fs = document.createElement("fieldset");
-      fs.className = "optgroup";
-      const lg = document.createElement("legend");
-      lg.textContent = group.label;
-      fs.appendChild(lg);
-      const pills = document.createElement("div");
-      pills.className = "pills";
-      group.choices.forEach((c, i) => {
-        const label = document.createElement("label");
-        label.className = "pill";
-        label.innerHTML = '<input type="radio"><span><span class="pill__t"></span><small></small></span>';
-        const input = $("input", label);
-        input.name = "opt-" + group.id;
-        input.checked = state.options[group.id] === i;
-        $(".pill__t", label).textContent = c.label;
-        $("small", label).textContent = c.add ? "+" + AVER.formatPrice(c.add) : "";
-        input.addEventListener("change", () => {
-          state.options[group.id] = i;
-          updateSummary();
-        });
-        pills.appendChild(label);
-      });
-      fs.appendChild(pills);
-      box.appendChild(fs);
+      const items = group.choices.map((c) => ({ label: c.label, note: c.add ? "+" + AVER.formatPrice(c.add) : "" }));
+      box.appendChild(pillGroup(group.label, "opt-" + group.id, items, state.options[group.id], (item, i) => {
+        state.options[group.id] = i;
+        updateSummary();
+      }));
     });
   }
 
+  // Група «пігулок»-радіокнопок із підписом
+  function pillGroup(legend, name, items, checked, onChange) {
+    const fs = document.createElement("fieldset");
+    fs.className = "optgroup";
+    const lg = document.createElement("legend");
+    lg.textContent = legend;
+    fs.appendChild(lg);
+    const pills = document.createElement("div");
+    pills.className = "pills";
+    items.forEach((item, i) => {
+      const label = document.createElement("label");
+      label.className = "pill";
+      label.innerHTML = '<input type="radio"><span><span class="pill__t"></span><small></small></span>';
+      const input = $("input", label);
+      input.name = name;
+      input.checked = i === checked;
+      $(".pill__t", label).textContent = item.label;
+      $("small", label).textContent = item.note;
+      input.addEventListener("change", () => onChange(item, i));
+      pills.appendChild(label);
+    });
+    fs.appendChild(pills);
+    return fs;
+  }
+
   /* ---------- Крок 3: дата й час ---------- */
-  async function freeSlots(iso) {
-    const s = state.service;
-    const day = fromISO(iso).getDay();
-    const hours = AVER.hours[day];
-    if (!hours) return [];
-    const busy = await AVER.getBusySlots(iso, s.cat);
-    const now = new Date();
-    const isToday = iso === toISO(now);
-    const earliest = now.getHours() * 60 + now.getMinutes() + 60; // сьогодні: не раніше ніж за годину
-    const out = [];
-    for (let t = hours[0]; t + s.min <= hours[1]; t += AVER.slotStep) {
-      if (isToday && t < earliest) continue;
-      const clash = busy.some((b) => t < b.end && t + s.min > b.start);
-      if (!clash) out.push(t);
-    }
-    return out;
+  function freeSlots(iso) {
+    return AVER.freeSlots(iso, state.service.id, state.master);
   }
 
   async function renderDays() {
@@ -263,7 +278,7 @@
       $(".day__wd", b).textContent = WEEKDAYS[d.getDay()];
       $(".day__num", b).textContent = d.getDate();
       $(".day__mo", b).textContent = MONTHS[d.getMonth()];
-      const closed = !AVER.hours[d.getDay()];
+      const closed = !AVER.dayHours(iso);
       b.disabled = !slots.length;
       b.setAttribute("aria-pressed", "false");
       b.setAttribute(
@@ -417,22 +432,20 @@
     $("[data-next-label]").textContent = "Зберігаємо…";
 
     try {
-      // час міг зайняти хтось інший, поки заповнювали форму
-      const still = await freeSlots(state.date);
-      if (!still.includes(state.time)) {
+      // перевірка вільного часу й збереження йдуть разом (data.js), накладка неможлива
+      const result = await saveCurrent(data);
+      showDone(data.name, result);
+    } catch (err) {
+      state.submitting = false;
+      setBusy(false);
+      if (err && err.code === "slot_taken") {
+        // час зайняв хтось інший, поки заповнювали форму
         state.time = null;
-        state.submitting = false;
-        setBusy(false);
         goTo(3);
         showSlotsNotice("Цей час щойно зайняли. Оберіть, будь ласка, інший.");
         return;
       }
-      const result = await saveCurrent(data);
-      showDone(data.name, result.id);
-    } catch (err) {
       showFormError("Не вдалося зберегти запис. Перевірте інтернет і спробуйте ще раз або зателефонуйте нам.");
-      state.submitting = false;
-      setBusy(false);
       updateSummary();
     }
   }
@@ -456,21 +469,18 @@
 
   function saveCurrent(data) {
     return AVER.saveBooking({
-      service: state.service.id,
-      serviceName: state.service.name,
-      category: state.service.cat,
-      options: optionsSummary(),
+      serviceId: state.service.id,
+      masterId: state.master,
       date: state.date,
       start: state.time,
-      duration: state.service.min,
-      price: total(),
+      choices: { ...state.options },
       name: data.name,
       phone: data.phone,
       comment: data.comment,
     });
   }
 
-  function showDone(name, id) {
+  function showDone(name, result) {
     $$(".bk-step").forEach((s) => (s.hidden = true));
     $("[data-nav-bar]").hidden = true;
     $$("[data-steps] li").forEach((li) => {
@@ -480,8 +490,9 @@
     $$("[data-steps] button").forEach((b) => (b.disabled = true));
     $("[data-done-name]").textContent = name;
     $("[data-done-text]").textContent =
-      "Ви записані на «" + state.service.name + "»: " + dayMonth(state.date) + " о " + timeText(state.time) + ". Адміністратор зателефонує, щоб підтвердити візит.";
-    $("[data-done-id]").textContent = id;
+      "Ви записані на «" + state.service.name + "»" + (result.masterName ? " до майстра " + result.masterName : "") + ": " +
+      dayMonth(state.date) + " о " + timeText(state.time) + ". Адміністратор зателефонує, щоб підтвердити візит.";
+    $("[data-done-id]").textContent = result.id;
     const done = $("[data-done]");
     done.hidden = false;
     $("#done-title").focus({ preventScroll: true });
@@ -567,6 +578,7 @@
     const set = (k, v) => ($('[data-sum="' + k + '"]').textContent = v || "не обрано");
     set("service", s && s.name);
     set("options", s && optionsSummary());
+    set("master", s && (state.master ? masterName(state.master) : "будь-який вільний"));
     set("date", state.date && state.step >= 3 ? longDate(state.date) : "");
     set("time", state.time !== null ? timeText(state.time) + "–" + timeText(state.time + s.min) : "");
     set("duration", s && AVER.formatDuration(s.min));

@@ -84,6 +84,7 @@ create table if not exists bookings (
   service_id   text references services (id) on delete set null,
   service_name text not null,                             -- знімок назви на момент запису
   options_text text not null default '',
+  choices      jsonb not null default '{}',               -- {"length": 1} = обраний варіант у кожній групі
   -- майстра видалили: старі записи лишаються в історії без майстра
   -- (адмінка не дає видалити майстра, поки в нього є майбутні записи)
   master_id    text references masters (id) on delete set null,
@@ -275,9 +276,9 @@ begin
     exit when not exists (select 1 from bookings where code = v_code);
   end loop;
 
-  insert into bookings (code, service_id, service_name, options_text, master_id, date, start_min,
+  insert into bookings (code, service_id, service_name, options_text, choices, master_id, date, start_min,
                         duration_min, price, client_name, client_phone, comment, status, source)
-  values (v_code, s.id, s.name, v_text, v_master, p_date, p_start_min,
+  values (v_code, s.id, s.name, v_text, coalesce(p_choices, '{}'::jsonb), v_master, p_date, p_start_min,
           s.duration_min, v_price, trim(p_client_name), p_client_phone, coalesce(p_comment, ''), 'new', 'site');
 
   return v_code;

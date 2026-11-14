@@ -61,6 +61,19 @@
     return { text: "+380" + (parts.length ? " " + parts.join(" ") : ""), digits: d };
   }
 
+  /*
+   * Телефон, введений адміністратором: "067 123 45 67", "+380671234567", "80671234567",
+   * а також демо-номери "+380 00 000 00 00". Повертає { ok, text: "+380 67 123 45 67" }.
+   */
+  function normalizePhone(value) {
+    let d = String(value || "").replace(/\D/g, "");
+    if (d.startsWith("380")) d = d.slice(3);
+    else if (d.startsWith("80") && d.length === 11) d = d.slice(2);
+    else if (d.length === 10 && d.startsWith("0")) d = d.slice(1);
+    if (d.length !== 9) return { ok: false, text: String(value || "").trim() };
+    return { ok: true, text: "+380 " + d.slice(0, 2) + " " + d.slice(2, 5) + " " + d.slice(5, 7) + " " + d.slice(7, 9) };
+  }
+
   function phoneHref(text) {
     return "tel:+" + String(text || "").replace(/\D/g, "");
   }
@@ -86,7 +99,7 @@
       .join(", ");
   }
 
-  const api = { NB, nbsp, plural, formatPrice, formatDuration, formatPhone, phoneHref, dayRanges, DAYS_SHORT, WEEK_ORDER };
+  const api = { NB, nbsp, plural, formatPrice, formatDuration, formatPhone, normalizePhone, phoneHref, dayRanges, DAYS_SHORT, WEEK_ORDER };
   root.AVERText = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

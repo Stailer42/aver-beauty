@@ -72,6 +72,10 @@
     setInterval(() => {
       if (user) Admin.requireUser();
     }, 60 * 1000);
+    // запис із сайту в іншій вкладці: оновити лічильник
+    AVERDB.onChange((msg) => {
+      if ((msg.tables || []).includes("bookings")) Admin.refreshBadges();
+    });
 
     user = await AVERAuth.currentUser();
     $("[data-boot]").hidden = true;
@@ -199,6 +203,7 @@
     $("[data-skip]").setAttribute("href", "#adm-main");
     $("[data-user]").textContent = user.name + " (" + user.login + ")";
     render(currentId(), focus);
+    Admin.refreshBadges();
   }
 
   function currentId() {
@@ -250,6 +255,14 @@
     const more = $("[data-more]");
     if (more) more.classList.toggle("is-current", !SECTIONS.find((s) => s.id === id).mobile);
   }
+
+  // Нові (непідтверджені) записи на сьогодні й далі: число біля «Записів»
+  Admin.refreshBadges = async function () {
+    if (!user) return;
+    const today = UI.todayISO();
+    const n = (await AVERDB.list("bookings")).filter((b) => b.status === "new" && b.date >= today).length;
+    Admin.setBadge("bookings", n);
+  };
 
   // Лічильник біля пункту меню (напр. нові записи)
   Admin.setBadge = function (id, n) {

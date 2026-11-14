@@ -92,10 +92,101 @@
     { id: "m-daryna", name: "Дарина Шевчук", role: "Бровист і~лешмейкер", specialty: "Ламінування брів і~вій, нарощування вій", experience_years: 7,
       service_ids: ["brow-lamination", "lash-lamination", "lash-extension"] },
     { id: "m-anna", name: "Анна Ткаченко", role: "Косметолог", specialty: "Чистки, пілінги, масаж обличчя", experience_years: 10,
-      service_ids: ["face-cleaning", "peeling", "face-massage"] },
+      service_ids: ["face-cleaning", "peeling", "face-massage"], work_days: [1, 2, 3, 4, 5] },
     { id: "m-iryna", name: "Ірина Лисенко", role: "Візажист", specialty: "Вечірній і~весільний макіяж", experience_years: 7,
-      service_ids: ["makeup"] },
+      service_ids: ["makeup"], work_days: [3, 4, 5, 6] },
   ];
+
+  // Вигадані клієнти для тестових записів (телефони навмисно неробочі)
+  const CLIENTS = [
+    "Катерина Дмитренко", "Юлія Мороз", "Ольга Петренко", "Вікторія Савчук", "Наталія Кравець", "Ірина Захарченко",
+    "Анастасія Гуменюк", "Олена Литвин", "Тетяна Руденко", "Марина Остапчук", "Діана Левченко", "Христина Федорук",
+    "Софія Ковальчук", "Аліна Пономаренко", "Яна Білик", "Оксана Гаврилюк", "Дарина Сидоренко", "Людмила Яковенко",
+    "Андрій Бойко", "Максим Ткачук", "Вероніка Шевченко", "Інна Мельничук", "Галина Степаненко", "Роксолана Іваницька",
+  ];
+  const COMMENTS = ["Перший візит", "Прошу без парфумованих засобів", "Можливо, запізнюся на 5 хвилин", "Хочу так само, як минулого разу", "Чутлива шкіра"];
+
+  // Детермінований генератор: однаковий день запуску = однакові тестові записи
+  function seededRandom(seedText) {
+    let h = 2166136261;
+    for (let i = 0; i < seedText.length; i++) {
+      h ^= seedText.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return () => {
+      h += 0x6d2b79f5;
+      let t = h;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /*
+   * Тестові записи: 7 днів назад і 14 уперед. Кожен майстер заповнює свій день
+   * по черзі (процедура, перерва, процедура...), тому накладок немає за побудовою.
+   */
+  function makeBookings(todayISO, nowMin, services, masters, settings, closures) {
+    const S = window.AVERSchedule;
+    const out = [];
+    const codes = new Set();
+    const svcById = new Map(services.map((s) => [s.id, s]));
+    let clientN = 0;
+
+    for (let off = -7; off < 14; off++) {
+      const date = S.addDays(todayISO, off);
+      const hours = S.dayHours(date, settings, closures);
+      if (!hours) continue;
+      masters.forEach((m) => {
+        if (!S.masterWorks(m, date)) return;
+        const rnd = seededRandom("aver" + date + m.id);
+        // ближчі дні заповнені щільніше, далекі майже вільні
+        const busy = off < 0 ? 0.75 : Math.max(0.15, 0.7 - off * 0.04);
+        let t = hours[0] + Math.floor(rnd() * 3) * 30;
+        while (t < hours[1]) {
+          const svc = svcById.get(m.service_ids[Math.floor(rnd() * m.service_ids.length)]);
+          if (!svc || t + svc.duration_min > hours[1]) break;
+          if (rnd() > busy) {
+            t += 30 + Math.floor(rnd() * 3) * 30;
+            continue;
+          }
+          const choices = {};
+          svc.options.forEach((g) => (choices[g.id] = Math.floor(rnd() * g.choices.length)));
+          const past = off < 0 || (off === 0 && t + svc.duration_min <= nowMin);
+          const r = rnd();
+          const status = past ? (r < 0.1 ? "cancelled" : "confirmed") : r < 0.07 ? "new" : r < 0.93 ? "confirmed" : "cancelled";
+          let code;
+          do code = "AV-" + (1000 + Math.floor(rnd() * 9000));
+          while (codes.has(code));
+          codes.add(code);
+          const ci = clientN++ % CLIENTS.length;
+          const created = new Date(S.fromISO(S.addDays(date, -1 - Math.floor(rnd() * 9))).getTime() + (9 + Math.floor(rnd() * 10)) * 3600000);
+          out.push({
+            id: "b-" + date + "-" + m.id + "-" + t,
+            code,
+            service_id: svc.id,
+            service_name: svc.name,
+            options_text: S.optionsText(svc, choices),
+            choices,
+            master_id: m.id,
+            date,
+            start_min: t,
+            duration_min: svc.duration_min,
+            price: S.priceFor(svc, choices),
+            client_name: CLIENTS[ci],
+            client_phone: "+380 00 000 " + String(10 + ci).padStart(2, "0") + " " + String((ci * 29 + 11) % 100).padStart(2, "0"),
+            comment: rnd() < 0.15 ? COMMENTS[Math.floor(rnd() * COMMENTS.length)] : "",
+            status,
+            source: rnd() < 0.6 ? "site" : "admin",
+            created_at: created.toISOString(),
+            updated_at: created.toISOString(),
+          });
+          t += svc.duration_min + Math.floor(rnd() * 3) * 30;
+        }
+      });
+    }
+    return out;
+  }
 
   const WORKS = [
     ["work-1.jpg", 1000, 1500, "Фарбування волосся із фольгою, світле волосся", "Фарбування волосся", "m-olena"],
@@ -135,6 +226,9 @@
 
   function build(today) {
     const now = today.toISOString();
+    const S = window.AVERSchedule;
+    const todayISO = S.toISO(today);
+    const nowMin = today.getHours() * 60 + today.getMinutes();
 
     const services = SERVICES.map(([id, cat, name, min, price, from, options, desc], i) => ({
       id,
@@ -160,6 +254,30 @@
       visible: true,
     });
 
+    const settings = {
+      id: "main",
+      // 0 = неділя ... 6 = субота; null = вихідний
+      hours: { 0: null, 1: ["09:00", "20:00"], 2: ["09:00", "20:00"], 3: ["09:00", "20:00"], 4: ["09:00", "20:00"], 5: ["09:00", "20:00"], 6: ["09:00", "20:00"] },
+      slot_step: 30, // крок вибору часу, хвилин
+      days_ahead: 14, // на скільки днів уперед можна записатися
+      lead_min: 60, // сьогодні: не раніше ніж за стільки хвилин
+    };
+
+    // приклад винятку: скорочений день через 9 днів (якщо це не неділя)
+    let shortDay = S.addDays(todayISO, 9);
+    if (S.weekday(shortDay) === 0) shortDay = S.addDays(shortDay, 1);
+    const closures = [{ id: "c-1", date: shortDay, open: "10:00", close: "16:00", note: "Скорочений день: навчання команди" }];
+
+    const masters = MASTERS.map((m, i) => ({
+      work_days: [1, 2, 3, 4, 5, 6],
+      ...m,
+      role: nb(m.role),
+      specialty: nb(m.specialty),
+      photo: "",
+      sort: i,
+      visible: true,
+    }));
+
     return {
       users: [{
         id: "u-admin",
@@ -172,16 +290,9 @@
         created_at: now,
       }],
 
-      settings: [{
-        id: "main",
-        // 0 = неділя ... 6 = субота; null = вихідний
-        hours: { 0: null, 1: ["09:00", "20:00"], 2: ["09:00", "20:00"], 3: ["09:00", "20:00"], 4: ["09:00", "20:00"], 5: ["09:00", "20:00"], 6: ["09:00", "20:00"] },
-        slot_step: 30, // крок вибору часу, хвилин
-        days_ahead: 14, // на скільки днів уперед можна записатися
-        lead_min: 60, // сьогодні: не раніше ніж за стільки хвилин
-      }],
+      settings: [settings],
 
-      closures: [],
+      closures,
 
       categories: [
         { id: "hair", name: "Волосся", sort: 0, visible: true },
@@ -192,17 +303,9 @@
 
       services,
 
-      masters: MASTERS.map((m, i) => ({
-        ...m,
-        role: nb(m.role),
-        specialty: nb(m.specialty),
-        photo: "",
-        work_days: [1, 2, 3, 4, 5, 6],
-        sort: i,
-        visible: true,
-      })),
+      masters,
 
-      bookings: [],
+      bookings: makeBookings(todayISO, nowMin, services, masters, settings, closures),
 
       photos: [
         ...WORKS.map((w, i) => ({ ...photo("works", i, w), caption: nb(w[4]), master_id: w[5] })),
@@ -230,7 +333,7 @@
           services: {
             title: nb("Послуги\nта~ціни"),
             lead: nb("Ціни вказані за~базову процедуру. Вартість фарбування й~догляду залежить від~довжини волосся, майстер назве її до~початку роботи."),
-            note: nb("Майстра можна обрати під~час онлайн-запису, у~коментарі."),
+            note: nb("Майстра можна обрати під~час онлайн-запису."),
           },
           works: {
             title: nb("Роботи\nнаших майстрів"),
@@ -249,7 +352,7 @@
           },
           team: {
             title: nb("Команда\nмайстрів"),
-            lead: nb("Шестеро майстрів, кожен відповідає за~свій напрям. Хочете до~когось конкретного? Напишіть ім'я в~коментарі до~запису."),
+            lead: nb("Шестеро майстрів, кожен відповідає за~свій напрям. Хочете до~когось конкретного? Оберіть майстра під~час онлайн-запису."),
           },
           cta: {
             title: nb("Час подбати\nпро~себе"),
