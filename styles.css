@@ -259,7 +259,7 @@ p {
 
 .btn__fill {
   position: absolute;
-  inset: 0;
+  inset: -1px;
   z-index: -1;
   border-radius: inherit;
   transform: scaleX(0);
@@ -953,7 +953,7 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   position: sticky;
   top: var(--header-h);
   z-index: 2;
-  height: 48svh;
+  height: 44svh;
   margin: 0 calc(var(--gutter) * -1);
   overflow: hidden;
   background: var(--pink);
@@ -983,10 +983,10 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
 .salon__step {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: var(--s3);
   min-height: 52svh;
-  padding: var(--s5) 0;
+  padding: var(--s4) 0 var(--s5);
   opacity: 0.35;
   transition: opacity 600ms var(--ease);
 }
@@ -1020,6 +1020,7 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
     grid-row: 1;
   }
   .salon__step {
+    justify-content: center;
     min-height: 78svh;
   }
 }
