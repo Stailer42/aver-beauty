@@ -552,6 +552,16 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   background: var(--pink);
 }
 
+/* світла смуга зверху: меню читається на будь-якому фото */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: calc(var(--header-h) + 60px);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
 .hero__layer {
   position: absolute;
   inset: 0;
@@ -578,7 +588,7 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 20%;
+  object-position: 50% 18%;
   -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 96%);
   mask-image: linear-gradient(to bottom, #000 40%, transparent 96%);
 }
@@ -587,12 +597,12 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
 .hero__veil {
   position: absolute;
   inset: auto 0 0 0;
-  height: 55%;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  -webkit-mask-image: linear-gradient(to top, #000 20%, transparent);
-  mask-image: linear-gradient(to top, #000 20%, transparent);
+  height: 66%;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.94) 10%, rgba(255, 255, 255, 0.82) 45%, rgba(255, 255, 255, 0));
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent);
+  mask-image: linear-gradient(to top, #000 55%, transparent);
   pointer-events: none;
 }
 
@@ -646,8 +656,14 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
     mask-image: linear-gradient(to right, transparent 0%, #000 42%);
   }
   .hero__veil {
-    -webkit-mask-image: linear-gradient(to top right, #000 30%, transparent 75%);
-    mask-image: linear-gradient(to top right, #000 30%, transparent 75%);
+    inset: 0 auto 0 0;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.7) 45%, rgba(255, 255, 255, 0));
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    -webkit-mask-image: linear-gradient(to right, #000 55%, transparent);
+    mask-image: linear-gradient(to right, #000 55%, transparent);
   }
   .hero__content {
     padding-bottom: var(--s6);
@@ -898,6 +914,14 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   object-fit: cover;
   filter: saturate(0.92) contrast(1.02);
 }
+
+/* точка кадрування для кожної роботи: щоб в 4:5 не відрізало обличчя */
+.works li:nth-child(1) .photo { object-position: 50% 28%; }
+.works li:nth-child(2) .photo { object-position: 50% 24%; }
+.works li:nth-child(3) .photo { object-position: 50% 50%; }
+.works li:nth-child(4) .photo { object-position: 50% 30%; }
+.works li:nth-child(5) .photo { object-position: 50% 42%; }
+.works li:nth-child(6) .photo { object-position: 50% 45%; }
 
 .work__img .photo {
   aspect-ratio: 4 / 5;
@@ -1225,6 +1249,17 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 35%;
+}
+
+/* телефон: показати обличчя справа й дати тексту світлу підкладку вище */
+@media (max-width: 799px) {
+  .cta__layer img {
+    object-position: 82% 30%;
+  }
+  .cta .hero__veil {
+    height: 82%;
+  }
 }
 
 .cta__content {
