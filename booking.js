@@ -25,8 +25,13 @@
     options: {}, // { groupId: indexOfChoice }
     date: null, // "2026-11-18"
     time: null, // хвилини від початку доби
-    shownTotal: 0,
+    shownTotal: 0, // число, яке зараз на екрані (для анімації ціни)
+    submitting: false,
   };
+
+  // лічильники запитів: відповідь на застарілий запит ігнорується
+  let daysSeq = 0;
+  let slotsSeq = 0;
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -66,6 +71,18 @@
     return fromISO(iso).toLocaleDateString("uk-UA", { weekday: "long", day: "numeric", month: "long" });
   }
 
+  function dayMonth(iso) {
+    return fromISO(iso).toLocaleDateString("uk-UA", { day: "numeric", month: "long" });
+  }
+
+  function showError(box, text) {
+    box.innerHTML = "";
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = text;
+    box.appendChild(p);
+  }
+
   function total() {
     if (!state.service) return 0;
     return state.service.options.reduce((sum, group) => {
@@ -81,8 +98,7 @@
       const b = document.createElement("button");
       b.type = "button";
       b.className = "tab";
-      b.setAttribute("role", "tab");
-      b.setAttribute("aria-selected", "false");
+      b.setAttribute("aria-pressed", "false");
       b.dataset.cat = cat.id;
       b.textContent = cat.name;
       box.appendChild(b);
@@ -94,7 +110,7 @@
   }
 
   function selectCategory(catId) {
-    $$("[data-cat-tabs] .tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.cat === catId)));
+    $$("[data-cat-tabs] .tab").forEach((t) => t.setAttribute("aria-pressed", String(t.dataset.cat === catId)));
     const list = $("[data-service-list]");
     list.innerHTML = "";
     AVER.services
@@ -200,15 +216,32 @@
   }
 
   async function renderDays() {
+    const my = ++daysSeq;
     const list = $("[data-days]");
+    const slotsBox = $("[data-slots]");
     list.innerHTML = "";
+    slotsBox.innerHTML = "";
     const today = new Date();
     let firstAvailable = null;
 
+    const dates = [];
     for (let i = 0; i < AVER.daysAhead; i++) {
-      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+      dates.push(new Date(today.getFullYear(), today.getMonth(), today.getDate() + i));
+    }
+    let allSlots;
+    try {
+      allSlots = await Promise.all(dates.map((d) => freeSlots(toISO(d))));
+    } catch (err) {
+      if (my !== daysSeq) return;
+      showError(slotsBox, "Не вдалося завантажити розклад. Перевірте інтернет і спробуйте ще раз або зателефонуйте нам.");
+      return;
+    }
+    if (my !== daysSeq) return; // поки чекали, користувач уже пішов далі
+
+    for (let i = 0; i < dates.length; i++) {
+      const d = dates[i];
       const iso = toISO(d);
-      const slots = await freeSlots(iso);
+      const slots = allSlots[i];
       const li = document.createElement("li");
       const b = document.createElement("button");
       b.type = "button";
@@ -223,7 +256,7 @@
       b.setAttribute("aria-pressed", "false");
       b.setAttribute(
         "aria-label",
-        (i === 0 ? "сьогодні, " : "") + longDate(iso) + (closed ? ", вихідний" : !slots.length ? ", вільного часу немає" : ", вільних слотів: " + slots.length)
+        WEEKDAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()] + (i === 0 ? ", сьогодні" : "") + (closed ? ", вихідний" : !slots.length ? ", вільного часу немає" : ", вільних слотів: " + slots.length)
       );
       if (!b.disabled && !firstAvailable) firstAvailable = iso;
       b.addEventListener("click", () => selectDate(iso));
@@ -241,15 +274,28 @@
     state.date = iso;
     $$("[data-days] .day").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.date === iso)));
     const box = $("[data-slots]");
+    const status = $("[data-slots-status]");
+    const my = ++slotsSeq;
     box.innerHTML = "";
 
     if (!iso) {
-      box.innerHTML = '<p class="empty">Найближчими днями вільного часу немає. Зателефонуйте нам, і&nbsp;ми знайдемо віконце.</p>';
+      showError(box, "Найближчими днями вільного часу немає. Зателефонуйте нам, і\u00A0ми знайдемо віконце.");
+      status.textContent = "";
       updateSummary();
       return;
     }
 
-    const slots = await freeSlots(iso);
+    let slots;
+    try {
+      slots = await freeSlots(iso);
+    } catch (err) {
+      if (my !== slotsSeq) return;
+      showError(box, "Не вдалося завантажити вільний час. Спробуйте ще раз або зателефонуйте нам.");
+      return;
+    }
+    if (my !== slotsSeq) return; // відповідь на старий клік: ігноруємо
+    box.innerHTML = "";
+    status.textContent = longDate(iso) + ": вільних слотів " + slots.length;
     if (state.time !== null && !slots.includes(state.time)) state.time = null;
 
     const groups = [
@@ -275,6 +321,7 @@
         b.setAttribute("aria-pressed", String(state.time === t));
         b.addEventListener("click", () => {
           state.time = t;
+          $("[data-slots-notice]").hidden = true;
           $$(".slot", box).forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
           updateSummary();
         });
@@ -291,7 +338,8 @@
   function formatPhone(value) {
     let d = value.replace(/\D/g, "");
     if (d.startsWith("380")) d = d.slice(3);
-    else if (d.startsWith("0")) d = d.slice(1);
+    else if (d.startsWith("80")) d = d.slice(2);
+    while (d.startsWith("0")) d = d.slice(1);
     d = d.slice(0, 9);
     const parts = [d.slice(0, 2), d.slice(2, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean);
     return { text: "+380" + (parts.length ? " " + parts.join(" ") : ""), digits: d };
@@ -303,11 +351,16 @@
       if (!phone.value) phone.value = "+380 ";
     });
     phone.addEventListener("blur", () => {
-      if (formatPhone(phone.value).digits.length === 0) phone.value = "";
+      const f = formatPhone(phone.value);
+      phone.value = f.digits.length ? f.text : "";
     });
     phone.addEventListener("input", () => {
-      phone.value = formatPhone(phone.value).text + (formatPhone(phone.value).digits.length ? "" : " ");
-      if (formatPhone(phone.value).digits.length === 9) setInvalid("phone", false);
+      const f = formatPhone(phone.value);
+      // форматуємо лише коли друкують у кінці, щоб курсор не стрибав під час правок усередині
+      if (phone.selectionStart === phone.value.length) {
+        phone.value = f.text + (f.digits.length ? "" : " ");
+      }
+      if (f.digits.length === 9) setInvalid("phone", false);
     });
     $("#f-name").addEventListener("input", (e) => {
       if (e.target.value.trim().length >= 2) setInvalid("name", false);
@@ -341,18 +394,60 @@
   }
 
   async function submit() {
+    if (state.submitting) return;
     const data = validate();
     if (!data) return;
     const next = $("[data-next]");
+    $("[data-form-error]").hidden = true;
+    state.submitting = true;
+    setBusy(true);
     next.disabled = true;
     $("[data-next-label]").textContent = "Зберігаємо…";
 
-    const optionsText = optionsSummary();
-    const result = await AVER.saveBooking({
+    try {
+      // час міг зайняти хтось інший, поки заповнювали форму
+      const still = await freeSlots(state.date);
+      if (!still.includes(state.time)) {
+        state.time = null;
+        state.submitting = false;
+        setBusy(false);
+        goTo(3);
+        showSlotsNotice("Цей час щойно зайняли. Оберіть, будь ласка, інший.");
+        return;
+      }
+      const result = await saveCurrent(data);
+      showDone(data.name, result.id);
+    } catch (err) {
+      showFormError("Не вдалося зберегти запис. Перевірте інтернет і спробуйте ще раз або зателефонуйте нам.");
+      state.submitting = false;
+      setBusy(false);
+      updateSummary();
+    }
+  }
+
+  function setBusy(on) {
+    $("[data-back]").disabled = on;
+    $$("[data-steps] button").forEach((b, i) => (b.disabled = on || i + 1 > state.maxStep));
+  }
+
+  function showFormError(text) {
+    const el = $("[data-form-error]");
+    el.textContent = text;
+    el.hidden = false;
+  }
+
+  function showSlotsNotice(text) {
+    const el = $("[data-slots-notice]");
+    el.textContent = text;
+    el.hidden = false;
+  }
+
+  function saveCurrent(data) {
+    return AVER.saveBooking({
       service: state.service.id,
       serviceName: state.service.name,
       category: state.service.cat,
-      options: optionsText,
+      options: optionsSummary(),
       date: state.date,
       start: state.time,
       duration: state.service.min,
@@ -361,8 +456,6 @@
       phone: data.phone,
       comment: data.comment,
     });
-
-    showDone(data.name, result.id);
   }
 
   function showDone(name, id) {
@@ -375,7 +468,7 @@
     $$("[data-steps] button").forEach((b) => (b.disabled = true));
     $("[data-done-name]").textContent = name;
     $("[data-done-text]").textContent =
-      "Ви записані на «" + state.service.name + "», " + longDate(state.date) + " о " + timeText(state.time) + ". Адміністратор зателефонує, щоб підтвердити візит.";
+      "Ви записані на «" + state.service.name + "»: " + dayMonth(state.date) + " о " + timeText(state.time) + ". Адміністратор зателефонує, щоб підтвердити візит.";
     $("[data-done-id]").textContent = id;
     const done = $("[data-done]");
     done.hidden = false;
@@ -406,6 +499,8 @@
   }
 
   function goTo(step) {
+    if (state.submitting) return;
+    if (step !== 3) $("[data-slots-notice]").hidden = true;
     if (step > state.step) {
       for (let s = state.step; s < step; s++) if (!canLeave(s)) return;
     }
@@ -471,13 +566,23 @@
     $("[data-next-label]").textContent = NEXT_LABELS[state.step];
   }
 
+  let totalAnim = 0;
+  let totalTarget = null;
+
   function animateTotal(to) {
     const prefix = state.service && state.service.from ? "від " : "";
     const els = [$("[data-total]"), $("[data-total-mobile]")];
+    if (to !== totalTarget) $("[data-total-live]").textContent = "Разом: " + prefix + AVER.formatPrice(to);
+    totalTarget = to;
+
     const from = state.shownTotal;
-    state.shownTotal = to;
+    cancelAnimationFrame(totalAnim);
+    const paint = (v) => {
+      state.shownTotal = v;
+      els.forEach((el) => (el.textContent = prefix + AVER.formatPrice(v)));
+    };
     if (reduceMotion || from === to) {
-      els.forEach((el) => (el.textContent = prefix + AVER.formatPrice(to)));
+      paint(to);
       return;
     }
     const t0 = performance.now();
@@ -485,10 +590,9 @@
     function frame(now) {
       const p = Math.min(1, (now - t0) / dur);
       const eased = 1 - Math.pow(1 - p, 4);
-      const v = Math.round((from + (to - from) * eased) / 10) * 10;
-      els.forEach((el) => (el.textContent = prefix + AVER.formatPrice(p === 1 ? to : v)));
-      if (p < 1) requestAnimationFrame(frame);
+      paint(p === 1 ? to : Math.round((from + (to - from) * eased) / 10) * 10);
+      if (p < 1) totalAnim = requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    totalAnim = requestAnimationFrame(frame);
   }
 })();

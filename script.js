@@ -100,10 +100,18 @@
     const menu = document.getElementById("menu");
     if (!burger || !menu) return;
 
+    // поки меню відкрите, сторінка під ним недоступна для Tab і читачів екрана
+    const behind = [...document.querySelectorAll("main, footer, [data-mbar]")];
+
     function setOpen(open) {
       root.classList.toggle("menu-open", open);
       burger.setAttribute("aria-expanded", String(open));
       burger.setAttribute("aria-label", open ? "Закрити меню" : "Відкрити меню");
+      behind.forEach((el) => (el.inert = open));
+      if (open) {
+        const first = menu.querySelector("a");
+        if (first) setTimeout(() => first.focus({ preventScroll: true }), 50);
+      }
     }
 
     burger.addEventListener("click", () => setOpen(!root.classList.contains("menu-open")));

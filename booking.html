@@ -62,20 +62,20 @@
         <p class="intro intro--sub">Чотири кроки, близько хвилини. Показуємо лише вільний час.</p>
       </div>
 
-      <ol class="steps intro intro--cta" data-steps>
-        <li class="is-current"><button type="button" data-goto="1"><span class="steps__num">01</span><span class="steps__name">Процедура</span></button></li>
-        <li><button type="button" data-goto="2" disabled><span class="steps__num">02</span><span class="steps__name">Деталі</span></button></li>
-        <li><button type="button" data-goto="3" disabled><span class="steps__num">03</span><span class="steps__name">Дата й&nbsp;час</span></button></li>
-        <li><button type="button" data-goto="4" disabled><span class="steps__num">04</span><span class="steps__name">Контакти</span></button></li>
+      <ol class="steps" data-steps aria-label="Кроки запису">
+        <li class="is-current"><button type="button" data-goto="1" aria-label="Крок 1: процедура"><span class="steps__num">01</span><span class="steps__name">Процедура</span></button></li>
+        <li><button type="button" data-goto="2" aria-label="Крок 2: деталі" disabled><span class="steps__num">02</span><span class="steps__name">Деталі</span></button></li>
+        <li><button type="button" data-goto="3" aria-label="Крок 3: дата й час" disabled><span class="steps__num">03</span><span class="steps__name">Дата й&nbsp;час</span></button></li>
+        <li><button type="button" data-goto="4" aria-label="Крок 4: контакти" disabled><span class="steps__num">04</span><span class="steps__name">Контакти</span></button></li>
       </ol>
 
-      <div class="bk__grid intro intro--cta">
+      <div class="bk__grid">
         <div class="bk__main">
           <!-- Крок 1: процедура -->
           <section class="bk-step" data-step="1" aria-labelledby="st1">
             <h2 id="st1" tabindex="-1">Оберіть процедуру</h2>
-            <div class="tabs" role="tablist" aria-label="Категорії послуг" data-cat-tabs></div>
-            <ul class="choices" data-service-list></ul>
+            <div class="tabs" role="group" aria-label="Категорії послуг" data-cat-tabs></div>
+            <ul class="choices" role="radiogroup" aria-labelledby="st1" data-service-list></ul>
           </section>
 
           <!-- Крок 2: деталі -->
@@ -88,7 +88,9 @@
           <section class="bk-step" data-step="3" aria-labelledby="st3" hidden>
             <h2 id="st3" tabindex="-1">Оберіть дату й&nbsp;час</h2>
             <ul class="days" data-days aria-label="Дні для запису"></ul>
-            <div data-slots aria-live="polite"></div>
+            <p class="empty" data-slots-notice role="alert" hidden></p>
+            <p class="sr-only" data-slots-status aria-live="polite"></p>
+            <div data-slots></div>
           </section>
 
           <!-- Крок 4: контакти -->
@@ -110,11 +112,15 @@
                 <label for="f-comment">Коментар, необов'язково</label>
                 <textarea id="f-comment" name="comment" rows="3" placeholder="Наприклад, бажаний майстер"></textarea>
               </div>
-              <label class="check" data-field="consent">
-                <input type="checkbox" name="consent" required>
+              <div data-field="consent">
+              <label class="check">
+                <input type="checkbox" name="consent" required aria-describedby="e-consent">
                 <span class="check__box"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span>
                 <span>Погоджуюся на&nbsp;обробку імені й&nbsp;телефону для&nbsp;підтвердження запису</span>
               </label>
+              <span class="field__error" id="e-consent"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Без згоди ми не&nbsp;зможемо підтвердити запис</span>
+              </div>
+              <p class="empty" data-form-error role="alert" hidden></p>
             </form>
           </section>
 
@@ -139,7 +145,7 @@
           </section>
 
           <div class="bk-nav" data-nav-bar>
-            <div class="bk-nav__total"><span>Разом</span><strong data-total-mobile>0&nbsp;₴</strong></div>
+            <div class="bk-nav__total"><span>Разом</span><strong data-total-mobile aria-hidden="true">0&nbsp;₴</strong></div>
             <button class="btn btn--ghost" type="button" data-back aria-label="Назад" hidden>
               <span class="btn__fill"></span>
               <svg class="icon icon--back" aria-hidden="true"><use href="#i-arrow-left"/></svg>
@@ -161,7 +167,8 @@
             <div><dt>Час</dt><dd data-sum="time">не обрано</dd></div>
             <div><dt>Тривалість</dt><dd data-sum="duration">не обрано</dd></div>
           </dl>
-          <div class="summary__total"><span>Разом</span><strong data-total aria-live="polite">0&nbsp;₴</strong></div>
+          <div class="summary__total"><span>Разом</span><strong data-total aria-hidden="true">0&nbsp;₴</strong></div>
+          <p class="sr-only" data-total-live aria-live="polite"></p>
           <p class="summary__note">Оплата в&nbsp;салоні після процедури. Скасувати чи перенести запис можна телефоном.</p>
         </aside>
       </div>
