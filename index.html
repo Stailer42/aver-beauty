@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AVER: салон краси у Львові / стрижки, фарбування, манікюр</title>
+  <meta name="description" content="AVER: преміальний салон краси у Львові. Стрижки, складне фарбування, манікюр, догляд за обличчям, брови й вії. Онлайн-запис за 1 хвилину.">
+  <meta name="theme-color" content="#F7E6E9">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="uk_UA">
+  <meta property="og:site_name" content="AVER">
+  <meta property="og:title" content="AVER: салон краси у Львові">
+  <meta property="og:description" content="Преміальний догляд за волоссям, нігтями й обличчям без поспіху. Онлайн-запис за 1 хвилину.">
+  <meta property="og:url" content="https://stailer42.github.io/aver-beauty/">
+  <meta property="og:image" content="https://stailer42.github.io/aver-beauty/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400&amp;display=swap">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- ДЕМО: усі дані вигадані, замініть перед справжнім запуском -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BeautySalon",
+    "name": "AVER",
+    "telephone": "+380000000000",
+    "email": "hello@aver.example",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "вул. Тестова, 12",
+      "addressLocality": "Львів",
+      "addressCountry": "UA"
+    },
+    "openingHours": "Mo-Sa 09:00-20:00",
+    "priceRange": "₴₴₴",
+    "sameAs": ["https://www.instagram.com/"]
+  }
+  </script>
+
+  <script src="script.js"></script>
+  <script src="data.js" defer></script>
+</head>
+<body>
+  <!-- Іконки (Lucide), використовуються через <use href="#..."> -->
+  <svg width="0" height="0" class="sr-only" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+    <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Перейти до змісту</a>
+  <div class="progress" aria-hidden="true"></div>
+
+  <header class="header">
+    <div class="container header__inner">
+      <div class="intro intro--logo">
+        <a class="logo" href="index.html" aria-label="AVER, на головну">AVER</a>
+      </div>
+      <nav class="nav intro intro--nav" aria-label="Головне меню">
+        <a class="ulink" href="#services">Послуги</a>
+        <a class="ulink" href="#works">Роботи</a>
+        <a class="ulink" href="#salon">Салон</a>
+        <a class="ulink" href="#reviews">Відгуки</a>
+        <a class="ulink" href="#contacts">Контакти</a>
+      </nav>
+      <div class="header__actions intro intro--nav">
+        <a class="header__phone ulink" href="tel:+380000000000">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a>
+        <a class="btn btn--solid btn--sm" href="booking.html" data-nav>
+          <span class="btn__fill"></span><span class="btn__label">Записатися</span>
+        </a>
+        <button class="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Відкрити меню"><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="menu" id="menu">
+    <ul class="menu__list">
+      <li><a href="#services">Послуги</a></li>
+      <li><a href="#works">Роботи</a></li>
+      <li><a href="#salon">Салон</a></li>
+      <li><a href="#reviews">Відгуки</a></li>
+      <li><a href="#contacts">Контакти</a></li>
+    </ul>
+    <div class="menu__foot">
+      <a class="btn btn--solid" href="booking.html" data-nav>
+        <span class="btn__fill"></span><span class="btn__label">Записатися онлайн</span>
+        <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </a>
+      <a class="btn btn--ghost" href="tel:+380000000000">
+        <span class="btn__fill"></span><span class="btn__label">Зателефонувати</span>
+      </a>
+    </div>
+  </div>
+
+  <main id="main">
+    <!-- 1. ПЕРШИЙ ЕКРАН -->
+    <section class="hero" aria-label="AVER, салон краси у Львові">
+      <div class="hero__layer" data-parallax="0.18">
+        <!-- ФОТО: інтер'єр салону, 1920×1080, замінити assets/ph/hero-interior.svg -->
+        <img class="hero__interior photo" src="assets/ph/hero-interior.svg" alt="Світла зала салону AVER з високими вікнами" width="1920" height="1080" fetchpriority="high">
+      </div>
+      <div class="hero__model" data-parallax="0.08">
+        <!-- ФОТО: модель з доглянутим волоссям, 1200×1600 вертикаль, замінити assets/ph/hero-model.svg -->
+        <img class="photo" src="assets/ph/hero-model.svg" alt="Модель з доглянутим довгим волоссям" width="1200" height="1600" fetchpriority="high">
+      </div>
+      <div class="hero__veil" aria-hidden="true"></div>
+
+      <div class="container hero__content">
+        <span class="label intro intro--label">Салон краси у&nbsp;Львові / вул.&nbsp;Тестова,&nbsp;12</span>
+        <h1 class="hero__title intro intro--title">AVER<span class="sr-only">, салон краси у Львові</span></h1>
+        <p class="hero__sub intro intro--sub">Преміальний догляд за&nbsp;волоссям,<br>нігтями й&nbsp;обличчям без&nbsp;поспіху</p>
+        <div class="intro intro--cta">
+          <div class="hero__cta">
+            <a class="btn btn--solid" href="booking.html" data-nav>
+              <span class="btn__fill"></span><span class="btn__label">Записатися</span>
+              <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+            </a>
+            <a class="btn btn--ghost" href="tel:+380000000000">
+              <span class="btn__fill"></span><span class="btn__label">Зателефонувати</span>
+            </a>
+          </div>
+          <p class="hero__note">Онлайн-запис за&nbsp;1&nbsp;хвилину</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ПОСЛУГИ Й ЦІНИ (список генерується з data.js) -->
+    <section class="section" id="services" aria-labelledby="services-title">
+      <div class="container">
+        <div class="section__head">
+          <div class="rise">
+            <span class="label">01 / Послуги</span>
+            <h2 id="services-title">Послуги<br>та&nbsp;ціни</h2>
+          </div>
+          <p class="rise d1">Ціни вказані за&nbsp;базову процедуру. Вартість фарбування й&nbsp;догляду залежить від&nbsp;довжини волосся, майстер назве її до&nbsp;початку роботи.</p>
+        </div>
+        <div class="tabs rise" role="tablist" aria-label="Категорії послуг" data-services-tabs></div>
+        <div class="rise d1" data-services-panels></div>
+        <noscript><p>Щоб побачити перелік послуг, увімкніть JavaScript або зателефонуйте нам.</p></noscript>
+        <p class="services__note">Майстра можна обрати під&nbsp;час онлайн-запису, у&nbsp;коментарі.</p>
+      </div>
+    </section>
+
+    <!-- 3. ПРИКЛАДИ РОБІТ -->
+    <section class="section surface-pink" id="works" aria-labelledby="works-title">
+      <div class="container">
+        <div class="section__head">
+          <div class="rise">
+            <span class="label">02 / Роботи</span>
+            <h2 id="works-title">Роботи<br>наших майстрів</h2>
+          </div>
+          <p class="rise d1">Фото без&nbsp;фільтрів і&nbsp;ретуші: так результат виглядає в&nbsp;денному світлі, одразу після процедури.</p>
+        </div>
+        <!-- ФОТО: 6 робіт, 1080×1350 (4:5), замінити assets/ph/work-1..6.svg -->
+        <ul class="works">
+          <li class="rise"><figure class="work"><div class="work__img"><img class="photo" src="assets/ph/work-1.svg" alt="Світлий блонд у техніці AirTouch" width="1080" height="1350" loading="lazy"></div><figcaption>Блонд AirTouch <span class="work__who">Олена&nbsp;Бондар</span></figcaption></figure></li>
+          <li class="rise d1"><figure class="work"><div class="work__img"><img class="photo" src="assets/ph/work-2.svg" alt="Каскадна стрижка на довге волосся" width="1080" height="1350" loading="lazy"></div><figcaption>Каскадна стрижка <span class="work__who">Марія&nbsp;Коваленко</span></figcaption></figure></li>
+          <li class="rise d2"><figure class="work"><div class="work__img"><img class="photo" src="assets/ph/work-3.svg" alt="Нюдовий манікюр на коротких нігтях" width="1080" height="1350" loading="lazy"></div><figcaption>Нюдовий манікюр <span class="work__who">Софія&nbsp;Мельник</span></figcaption></figure></li>
+          <li class="rise"><figure class="work"><div class="work__img"><img class="photo" src="assets/ph/work-4.svg" alt="Вії після ламінування, крупний план" width="1080" height="1350" loading="lazy"></div><figcaption>Ламінування вій <span class="work__who">Дарина&nbsp;Шевчук</span></figcaption></figure></li>
+          <li class="rise d1"><figure class="work"><div class="work__img"><img class="photo" src="assets/ph/work-5.svg" alt="Вечірній макіяж у теплих тонах" width="1080" height="1350" loading="lazy"></div><figcaption>Вечірній макіяж <span class="work__who">Ірина&nbsp;Лисенко</span></figcaption></figure></li>
+          <li class="rise d2"><figure class="work"><div class="work__img"><img class="photo" src="assets/ph/work-6.svg" alt="Блискуче волосся після відновлення" width="1080" height="1350" loading="lazy"></div><figcaption>Відновлення волосся <span class="work__who">Марія&nbsp;Коваленко</span></figcaption></figure></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4. САЛОН: фото змінюються під час скролу -->
+    <section class="section" id="salon" aria-labelledby="salon-title">
+      <div class="container">
+        <div class="section__head">
+          <div class="rise">
+            <span class="label">03 / Салон</span>
+            <h2 id="salon-title">Тихий простір<br>у&nbsp;центрі Львова</h2>
+          </div>
+          <p class="rise d1">Чотири зони на&nbsp;одному поверсі старого будинку: світло з&nbsp;вікон, тепле дерево й&nbsp;жодної музики, яку треба перекрикувати.</p>
+        </div>
+
+        <div class="salon__wrap">
+          <!-- ФОТО: 4 фото інтер'єру, 1200×1500 (4:5), замінити assets/ph/salon-1..4.svg -->
+          <div class="salon__stage">
+            <img class="photo is-active" data-salon-img src="assets/ph/salon-1.svg" alt="Зала стилістів біля високих вікон" width="1200" height="1500">
+            <img class="photo" data-salon-img src="assets/ph/salon-2.svg" alt="Зона манікюру з м'якими кріслами" width="1200" height="1500" loading="lazy">
+            <img class="photo" data-salon-img src="assets/ph/salon-3.svg" alt="Кабінет догляду за обличчям" width="1200" height="1500" loading="lazy">
+            <img class="photo" data-salon-img src="assets/ph/salon-4.svg" alt="Лаунж із кавою для гостей" width="1200" height="1500" loading="lazy">
+          </div>
+          <ol class="salon__steps">
+            <li class="salon__step is-active" data-salon-step="0">
+              <span class="salon__num">01</span>
+              <h3>Зала стилістів</h3>
+              <p>Чотири крісла біля високих вікон і&nbsp;природне світло для&nbsp;точного кольору. Ми не&nbsp;записуємо гостей упритул, тож у&nbsp;залі завжди спокійно.</p>
+            </li>
+            <li class="salon__step" data-salon-step="1">
+              <span class="salon__num">02</span>
+              <h3>Зона манікюру</h3>
+              <p>Окремий тихий куточок із&nbsp;м'якими кріслами. Інструменти проходять три етапи обробки, крафт-пакет відкриваємо при&nbsp;вас.</p>
+            </li>
+            <li class="salon__step" data-salon-step="2">
+              <span class="salon__num">03</span>
+              <h3>Кабінет догляду</h3>
+              <p>Приватна кімната для&nbsp;процедур обличчя з&nbsp;приглушеним світлом, теплим пледом і&nbsp;зачиненими дверима.</p>
+            </li>
+            <li class="salon__step" data-salon-step="3">
+              <span class="salon__num">04</span>
+              <h3>Лаунж</h3>
+              <p>Кава, трав'яний чай і&nbsp;місце, де можна почекати подругу або просто перевести подих перед процедурою.</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ВІДГУКИ (вигадані, демо) -->
+    <section class="section" id="reviews" aria-labelledby="reviews-title">
+      <div class="container">
+        <div class="section__head">
+          <div class="rise">
+            <span class="label">04 / Відгуки</span>
+            <h2 id="reviews-title">Що кажуть<br>наші гості</h2>
+          </div>
+          <p class="rise d1">Відгуки, які гості залишили після візиту. Ми нічого не&nbsp;скорочували й&nbsp;не&nbsp;редагували.</p>
+        </div>
+
+        <ul class="reviews__track rise" tabindex="0" aria-label="Відгуки клієнтів, гортайте вбік" data-reviews>
+          <li class="review">
+            <svg class="icon review__quote" aria-hidden="true"><use href="#i-quote"/></svg>
+            <p>Нарешті блонд без&nbsp;жовтизни і&nbsp;з&nbsp;живими кінчиками. Олена пояснила кожен крок і&nbsp;порадила домашній догляд, який справді працює.</p>
+            <footer><cite>Катерина Д.</cite><span class="muted">Складне фарбування AirTouch</span></footer>
+          </li>
+          <li class="review">
+            <svg class="icon review__quote" aria-hidden="true"><use href="#i-quote"/></svg>
+            <p>Манікюр тримається три тижні без&nbsp;жодного відколу. Окремо дякую за&nbsp;тишу: це єдина година на&nbsp;тижні, коли я&nbsp;відпочиваю.</p>
+            <footer><cite>Юлія М.</cite><span class="muted">Манікюр з&nbsp;покриттям</span></footer>
+          </li>
+          <li class="review">
+            <svg class="icon review__quote" aria-hidden="true"><use href="#i-quote"/></svg>
+            <p>Анна дуже делікатна. Шкіра після чистки рівна, без&nbsp;почервоніння, а&nbsp;в&nbsp;кабінеті так затишно, що я&nbsp;майже заснула.</p>
+            <footer><cite>Ольга П.</cite><span class="muted">Комбінована чистка обличчя</span></footer>
+          </li>
+          <li class="review">
+            <svg class="icon review__quote" aria-hidden="true"><use href="#i-quote"/></svg>
+            <p>Макіяж на&nbsp;весілля сестри протримався до&nbsp;ранку. Ірина почула, що я&nbsp;хочу природний образ, і&nbsp;зробила саме так.</p>
+            <footer><cite>Вікторія С.</cite><span class="muted">Вечірній макіяж</span></footer>
+          </li>
+          <li class="review">
+            <svg class="icon review__quote" aria-hidden="true"><use href="#i-quote"/></svg>
+            <p>Записалася онлайн за&nbsp;хвилину, прийшла, і&nbsp;мене не&nbsp;змусили чекати. Вії виглядають доглянутими, а&nbsp;не&nbsp;штучними.</p>
+            <footer><cite>Наталія К.</cite><span class="muted">Ламінування вій</span></footer>
+          </li>
+        </ul>
+        <div class="reviews__ctrl">
+          <button class="round-btn" type="button" data-dir="prev" aria-label="Попередній відгук"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+          <button class="round-btn" type="button" data-dir="next" aria-label="Наступний відгук"><svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ЧОМУ AVER -->
+    <section class="section surface-pink" id="why" aria-labelledby="why-title">
+      <div class="container">
+        <div class="section__head">
+          <div class="rise">
+            <span class="label">05 / Чому AVER</span>
+            <h2 id="why-title">Чому гості<br>повертаються</h2>
+          </div>
+        </div>
+        <ol class="why">
+          <li class="why__item rise">
+            <span class="why__num" aria-hidden="true">01</span>
+            <h3>Досвідчені майстри</h3>
+            <p>Кожен майстер працює від&nbsp;семи років і&nbsp;щороку проходить навчання з&nbsp;нових технік.</p>
+          </li>
+          <li class="why__item rise">
+            <span class="why__num" aria-hidden="true">02</span>
+            <h3>Професійна косметика</h3>
+            <p>Працюємо з&nbsp;італійськими та&nbsp;французькими брендами салонного догляду і&nbsp;радимо лише те, чим користуємося самі.</p>
+          </li>
+          <li class="why__item rise">
+            <span class="why__num" aria-hidden="true">03</span>
+            <h3>Стерильність без&nbsp;компромісів</h3>
+            <p>Три етапи обробки інструментів, одноразові пилки й&nbsp;крафт-пакети, які відкриваємо при&nbsp;вас.</p>
+          </li>
+          <li class="why__item rise">
+            <span class="why__num" aria-hidden="true">04</span>
+            <h3>Чесна ціна</h3>
+            <p>Вартість називаємо до&nbsp;початку процедури. Жодних доплат, про&nbsp;які ви дізнаєтеся вже на&nbsp;касі.</p>
+          </li>
+          <li class="why__item rise">
+            <span class="why__num" aria-hidden="true">05</span>
+            <h3>Ваш час</h3>
+            <p>Не&nbsp;записуємо впритул і&nbsp;не&nbsp;поспішаємо. Онлайн-запис працює цілодобово.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 7. КОМАНДА -->
+    <section class="section" id="team" aria-labelledby="team-title">
+      <div class="container">
+        <div class="section__head">
+          <div class="rise">
+            <span class="label">06 / Команда</span>
+            <h2 id="team-title">Команда<br>майстрів</h2>
+          </div>
+          <p class="rise d1">Шестеро майстрів, кожен відповідає за&nbsp;свій напрям. Хочете до&nbsp;когось конкретного? Напишіть ім'я в&nbsp;коментарі до&nbsp;запису.</p>
+        </div>
+        <ul class="team">
+          <li class="member rise">
+            <span class="label">Засновниця, стиліст-колорист</span>
+            <h3>Олена Бондар</h3>
+            <p class="muted">Складне фарбування, блонд, AirTouch</p>
+            <span class="member__meta">Досвід 12&nbsp;років</span>
+          </li>
+          <li class="member rise d1">
+            <span class="label">Топ-стиліст</span>
+            <h3>Марія Коваленко</h3>
+            <p class="muted">Стрижки, укладання, відновлення волосся</p>
+            <span class="member__meta">Досвід 9&nbsp;років</span>
+          </li>
+          <li class="member rise d2">
+            <span class="label">Майстер нігтьового сервісу</span>
+            <h3>Софія Мельник</h3>
+            <p class="muted">Манікюр, педикюр, нарощування</p>
+            <span class="member__meta">Досвід 8&nbsp;років</span>
+          </li>
+          <li class="member rise">
+            <span class="label">Бровист і&nbsp;лешмейкер</span>
+            <h3>Дарина Шевчук</h3>
+            <p class="muted">Ламінування брів і&nbsp;вій, нарощування вій</p>
+            <span class="member__meta">Досвід 7&nbsp;років</span>
+          </li>
+          <li class="member rise d1">
+            <span class="label">Косметолог</span>
+            <h3>Анна Ткаченко</h3>
+            <p class="muted">Чистки, пілінги, масаж обличчя</p>
+            <span class="member__meta">Досвід 10&nbsp;років</span>
+          </li>
+          <li class="member rise d2">
+            <span class="label">Візажист</span>
+            <h3>Ірина Лисенко</h3>
+            <p class="muted">Вечірній і&nbsp;весільний макіяж</p>
+            <span class="member__meta">Досвід 7&nbsp;років</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 8. ФІНАЛЬНИЙ ЗАКЛИК -->
+    <section class="cta" aria-labelledby="cta-title">
+      <div class="cta__layer" data-parallax="0.1">
+        <!-- ФОТО: атмосферне фото, 1920×1080, замінити assets/ph/cta.svg -->
+        <img class="photo" src="assets/ph/cta.svg" alt="Волосся моделі в теплому світлі вечірньої зали" width="1920" height="1080" loading="lazy">
+      </div>
+      <div class="hero__veil" aria-hidden="true"></div>
+      <div class="container cta__content">
+        <span class="label rise">Запис</span>
+        <h2 class="rise" id="cta-title">Час подбати<br>про&nbsp;себе</h2>
+        <p class="rise d1">Оберіть процедуру та&nbsp;вільний час онлайн або&nbsp;зателефонуйте, і&nbsp;ми підберемо зручний день.</p>
+        <div class="cta__actions rise d2">
+          <a class="btn btn--solid" href="booking.html" data-nav>
+            <span class="btn__fill"></span><span class="btn__label">Записатися</span>
+            <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </a>
+        </div>
+        <ul class="phones rise d3">
+          <li><a class="ulink" href="tel:+380000000000">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a></li>
+          <li><a class="ulink" href="tel:+380000000001">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;01</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- 9. ФУТЕР -->
+  <footer class="footer surface-pink" id="contacts">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <span class="label">AVER</span>
+          <p>AVER відкрився у&nbsp;2019&nbsp;році як&nbsp;невелика студія колориста Олени Бондар. Сьогодні це шестеро майстрів, чотири зони й&nbsp;та&nbsp;сама ідея: доглянутий вигляд без&nbsp;поспіху та&nbsp;зайвого шуму.</p>
+        </div>
+        <div>
+          <h2>Контакти</h2>
+          <ul>
+            <li><a class="ulink" href="tel:+380000000000"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a></li>
+            <li><a class="ulink" href="tel:+380000000001"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>+380&nbsp;00&nbsp;000&nbsp;00&nbsp;01</a></li>
+            <li><a class="ulink" href="mailto:hello@aver.example"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>hello@aver.example</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Адреса</h2>
+          <address>
+            <a class="ulink" href="https://www.google.com/maps/search/?api=1&amp;query=%D0%9B%D1%8C%D0%B2%D1%96%D0%B2" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>Львів, вул.&nbsp;Тестова,&nbsp;12</a>
+          </address>
+          <p class="muted">Пн–Сб 09:00–20:00<br>Неділя: вихідний</p>
+        </div>
+        <div>
+          <h2>Соцмережі</h2>
+          <ul>
+            <li><a class="ulink" href="https://www.instagram.com/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg>Instagram</a></li>
+            <li><a class="ulink" href="https://t.me/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Telegram</a></li>
+            <li><a class="ulink" href="https://www.facebook.com/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-facebook"/></svg>Facebook</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 AVER</span>
+        <span>Демо-сайт для&nbsp;портфоліо: імена, ціни, відгуки й&nbsp;контакти вигадані.</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mbar" aria-hidden="true" data-mbar>
+    <a class="btn btn--solid" href="booking.html" data-nav tabindex="-1">
+      <span class="btn__fill"></span><span class="btn__label">Записатися</span>
+      <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+    </a>
+    <a class="btn btn--ghost" href="tel:+380000000000" aria-label="Зателефонувати" tabindex="-1">
+      <span class="btn__fill"></span><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>
+    </a>
+  </div>
+
+  <div class="curtain" aria-hidden="true"></div>
+</body>
+</html>
