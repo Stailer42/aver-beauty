@@ -1615,6 +1615,200 @@
   }
 }
 
+/* ---------- фото ---------- */
+.adm-thumb {
+  flex: none;
+  width: 48px;
+  height: 60px;
+  overflow: hidden;
+  background: var(--pink);
+}
+
+.adm-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02);
+}
+
+.adm-row.is-hidden .adm-thumb {
+  opacity: 0.5;
+}
+
+.adm-photoedit {
+  display: grid;
+  gap: var(--s4);
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .adm-photoedit {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}
+
+.adm-photoedit__side {
+  display: grid;
+  gap: var(--s3);
+}
+
+/* рамка прев'ю: як на сайті (роботи 4:5, салон 3:2) */
+.adm-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--pink);
+}
+
+.adm-frame--salon {
+  aspect-ratio: 3 / 2;
+  max-width: 320px;
+}
+
+.adm-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02);
+}
+
+.adm-frame__empty {
+  padding: var(--s3);
+  font-size: 14px;
+  color: var(--ink-75);
+  text-align: center;
+}
+
+.adm-focus__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 13px;
+  color: var(--ink-75);
+}
+
+.adm-focus input[type="range"] {
+  flex: 1;
+  min-height: 44px;
+  accent-color: var(--ink);
+}
+
+/* ---------- тексти ---------- */
+@media (min-width: 1100px) {
+  .adm-grid--content > .adm-panel:first-child {
+    grid-row: auto;
+  }
+}
+
+.adm-details {
+  border-top: 1px solid var(--hair);
+}
+
+.adm-details:last-of-type {
+  border-bottom: 1px solid var(--hair);
+}
+
+.adm-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 16px;
+}
+
+.adm-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.adm-details summary::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 320ms var(--ease);
+}
+
+.adm-details[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.adm-details__body {
+  display: grid;
+  gap: var(--s3);
+  padding-bottom: var(--s4);
+}
+
+.adm-why {
+  display: grid;
+  gap: var(--s3);
+  justify-items: start;
+}
+
+.adm-why__item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 4px var(--s2);
+  width: 100%;
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--hair);
+}
+
+.adm-why__num {
+  padding-top: 12px;
+  font-size: 13px;
+  color: var(--ink-75);
+}
+
+.adm-why__fields {
+  display: grid;
+  gap: 4px;
+}
+
+.adm-why__fields input,
+.adm-why__fields textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.adm-why__fields input {
+  font-size: 17px;
+}
+
+.adm-why__fields textarea {
+  font-size: 15px;
+}
+
+.adm-why__fields input:focus,
+.adm-why__fields textarea:focus {
+  outline: none;
+  border-bottom-color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+.adm-why__tools {
+  grid-column: 2;
+  justify-content: flex-end;
+}
+
 /* кнопка «Видалити» в діалозі: ліворуч, окремо від основних дій */
 .adm-dialog__danger {
   margin-right: auto;

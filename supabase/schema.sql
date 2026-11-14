@@ -120,6 +120,7 @@ create table if not exists photos (
   alt       text not null,
   caption   text not null default '',                     -- для робіт
   master_id text references masters (id) on delete set null,
+  focus_y   int  not null default 50 check (focus_y between 0 and 100), -- точка кадрування по вертикалі, %
   title     text not null default '',                     -- для салону
   text      text not null default '',
   sort      int  not null default 0,

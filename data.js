@@ -12,6 +12,8 @@
  *   AVER.freeSlots(dateISO, serviceId, masterId) -> вільний час (хвилини від початку доби)
  *   AVER.saveBooking({...})                     -> зберегти запис (атомарно, без накладок)
  *   AVER.hoursLines(), AVER.openingHours()      -> години роботи для футера й Google
+ *   AVER.content                                -> тексти, контакти, соцмережі
+ *   AVER.works, AVER.salon, AVER.reviews        -> видимі фото робіт, зони салону, відгуки
  *
  * Supabase: freeSlots читатиме функцію busy_slots(date), saveBooking викликатиме
  * create_booking(...) (див. supabase/schema.sql), сторінки не зміняться.
@@ -34,13 +36,32 @@ const AVER = {
   let rawMasters = []; // видимі майстри у форматі таблиці (для schedule.js)
 
   AVER.ready = (async function load() {
-    const [st, cl, categories, services, masters] = await Promise.all([
+    const [st, cl, categories, services, masters, content, photos, reviews] = await Promise.all([
       AVERDB.single("settings"),
       AVERDB.list("closures"),
       AVERDB.list("categories"),
       AVERDB.list("services"),
       AVERDB.list("masters"),
+      AVERDB.single("content"),
+      AVERDB.list("photos"),
+      AVERDB.list("reviews"),
     ]);
+    AVER.content = content;
+    AVER.reviews = reviews.filter((r) => r.visible).map((r) => ({ author: r.author, service: r.service_label, text: r.text }));
+    const masterNames = new Map(masters.map((m) => [m.id, m.name]));
+    const toPhoto = async (p) => ({
+      src: await AVERDB.fileUrl(p.src),
+      width: p.width,
+      height: p.height,
+      alt: p.alt,
+      focus: p.focus_y ?? 50,
+      caption: p.caption || "",
+      master: p.master_id ? masterNames.get(p.master_id) || "" : "",
+      title: p.title || "",
+      text: p.text || "",
+    });
+    AVER.works = await Promise.all(photos.filter((p) => p.album === "works" && p.visible).map(toPhoto));
+    AVER.salon = await Promise.all(photos.filter((p) => p.album === "salon" && p.visible).map(toPhoto));
     settings = st;
     closures = cl;
     AVER.daysAhead = st.days_ahead;
@@ -107,13 +128,17 @@ const AVER = {
   /**
    * Вільний час на дату для послуги: [600, 630, ...].
    * masterId = null: будь-який майстер, що виконує послугу.
-   * Записи читаються щоразу заново: хтось міг записатися хвилину тому.
+   * Беремо лише зайняті проміжки (без імен і телефонів) і щоразу заново:
+   * хтось міг записатися хвилину тому.
    */
   AVER.freeSlots = async function (iso, serviceId, masterId) {
     await AVER.ready;
     const svc = rawServices.get(serviceId);
     if (!svc) return [];
-    const bookings = await AVERDB.list("bookings");
+    const busy = await AVERDB.busySlots(iso);
+    const bookings = busy.map((b, i) => ({
+      id: "busy-" + i, master_id: b.master_id, date: iso, start_min: b.start_min, duration_min: b.end_min - b.start_min, status: "confirmed",
+    }));
     return S.freeSlots({
       date: iso,
       duration: svc.duration_min,
@@ -128,53 +153,23 @@ const AVER = {
   /**
    * Зберігає запис із сайту зі статусом "нова".
    * b: { serviceId, masterId (null = будь-який), date, start, choices, name, phone, comment }
-   * Ціну, тривалість і опис параметрів рахуємо тут, а не беремо зі сторінки.
-   * Перевірка вільного часу й запис ідуть в одній транзакції: два однакові записи
-   * з різних вкладок не пройдуть. Якщо час уже зайнятий, кидає помилку з code = "slot_taken".
+   * Ціну, тривалість, майстра й перевірку вільного часу робить AVERDB.createBooking
+   * (у Supabase це серверна функція create_booking), а не сторінка.
+   * Якщо час уже зайнятий, кидає помилку з code = "slot_taken".
    * Повертає { id: "AV-1234", masterName }.
    */
   AVER.saveBooking = async function (b) {
     await AVER.ready;
-    const svc = rawServices.get(b.serviceId);
-    if (!svc) throw Object.assign(new Error("Послугу не знайдено"), { code: "service_not_found" });
-    const masters = candidates(b.serviceId, b.masterId);
-    const now = new Date().toISOString();
-
-    return AVERDB.atomic("bookings", async (db) => {
-      const all = await db.getAll("bookings");
-      // той самий розрахунок, що й для показу слотів, але на свіжих даних усередині транзакції
-      const slot = S.freeSlots({
-        date: b.date, duration: svc.duration_min, masters, bookings: all, settings, closures, now: new Date(),
-      }).find((x) => x.start === b.start);
-      if (!slot) throw Object.assign(new Error("Цей час щойно зайняли"), { code: "slot_taken" });
-
-      const masterId = slot.masters[0]; // обраний майстер або перший вільний
-      const codes = new Set(all.map((x) => x.code));
-      let code;
-      do code = "AV-" + Math.floor(1000 + Math.random() * 9000);
-      while (codes.has(code));
-
-      await db.put("bookings", {
-        id: AVERDB.newId(),
-        code,
-        service_id: svc.id,
-        service_name: svc.name,
-        options_text: S.optionsText(svc, b.choices),
-        choices: b.choices || {},
-        master_id: masterId,
-        date: b.date,
-        start_min: b.start,
-        duration_min: svc.duration_min,
-        price: S.priceFor(svc, b.choices),
-        client_name: b.name,
-        client_phone: b.phone,
-        comment: b.comment || "",
-        status: "new",
-        source: "site",
-        created_at: now,
-        updated_at: now,
-      });
-      return { id: code, masterName: (rawMasters.find((m) => m.id === masterId) || {}).name || "" };
+    const r = await AVERDB.createBooking({
+      service_id: b.serviceId,
+      master_id: b.masterId || null,
+      date: b.date,
+      start_min: b.start,
+      choices: b.choices || {},
+      client_name: b.name,
+      client_phone: b.phone,
+      comment: b.comment || "",
     });
+    return { id: r.code, masterName: (rawMasters.find((m) => m.id === r.master_id) || {}).name || "" };
   };
 })();

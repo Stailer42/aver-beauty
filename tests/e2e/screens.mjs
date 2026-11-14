@@ -26,6 +26,11 @@ for (const w of widths) {
   for (const p of pages) {
     await b.viewport(w, 800);
     await b.goto(BASE + p, 1200);
+    // ліниві фото поза екраном інакше не встигають завантажитися, і знімок залежить від випадку
+    await b.eval(`Promise.all([...document.images].map((i) => {
+      i.loading = "eager";
+      return i.complete && i.naturalWidth ? 1 : new Promise((r) => { i.addEventListener("load", r, { once: true }); i.addEventListener("error", r, { once: true }); setTimeout(r, 5000); });
+    })).then(() => document.fonts.ready).then(() => new Promise((r) => setTimeout(r, 300)))`);
     const file = join(outDir, p.replace(".html", "") + "-" + w + ".png");
     await b.screenshot(file);
     shots.push(file);

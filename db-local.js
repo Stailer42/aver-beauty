@@ -16,7 +16,7 @@
   const DB_NAME = "aver-demo";
   const DB_VERSION = 1;
   // Збільшуємо, коли змінюється структура тестових даних: стара демо-база перезапишеться
-  const SEED_VERSION = 2;
+  const SEED_VERSION = 3;
 
   const TABLES = [
     "meta", "users", "settings", "closures", "categories", "services",
@@ -322,6 +322,74 @@
       urlCache.forEach((u) => URL.revokeObjectURL(u));
       urlCache.clear();
       notify(Object.keys(tables));
+    },
+
+    /* ---------- функції для сайту (у Supabase: RPC busy_slots і create_booking) ---------- */
+
+    /**
+     * Зайняті проміжки на дату: [{ master_id, start_min, end_min }].
+     * Лише час, без імен і телефонів: відвідувач сайту чужих даних не бачить.
+     */
+    async busySlots(date) {
+      const rows = await api.list("bookings");
+      return rows
+        .filter((b) => b.date === date && b.status !== "cancelled")
+        .map((b) => ({ master_id: b.master_id, start_min: b.start_min, end_min: b.start_min + b.duration_min }));
+    },
+
+    /**
+     * Запис із сайту, як create_booking у supabase/schema.sql:
+     * p = { service_id, master_id (null = будь-який), date, start_min, choices, client_name, client_phone, comment }
+     * Ціну, тривалість і майстра визначає "сервер" (ця функція), а не сторінка.
+     * Перевірка вільного часу й запис в одній транзакції. Помилки: err.code =
+     * "service_not_found" | "bad_name" | "bad_phone" | "slot_taken".
+     * Повертає { code: "AV-1234", master_id }.
+     */
+    async createBooking(p) {
+      const S = window.AVERSchedule;
+      const fail = (code) => Object.assign(new Error(code), { code });
+      if (String(p.client_name || "").trim().length < 2) throw fail("bad_name");
+      if (String(p.client_phone || "").replace(/\D/g, "").length !== 12) throw fail("bad_phone");
+      const [settings, closures, services, masters] = await Promise.all([
+        api.single("settings"), api.list("closures"), api.list("services"), api.list("masters"),
+      ]);
+      const svc = services.find((s) => s.id === p.service_id && s.visible);
+      if (!svc) throw fail("service_not_found");
+      const candidates = S.mastersFor(masters, svc.id, true).filter((m) => !p.master_id || m.id === p.master_id);
+      const now = new Date().toISOString();
+
+      return api.atomic("bookings", async (db) => {
+        const all = await db.getAll("bookings");
+        const slot = S.freeSlots({ date: p.date, duration: svc.duration_min, masters: candidates, bookings: all, settings, closures, now: new Date() })
+          .find((x) => x.start === p.start_min);
+        if (!slot) throw fail("slot_taken");
+        const masterId = slot.masters[0]; // обраний або перший вільний
+        const codes = new Set(all.map((x) => x.code));
+        let code;
+        do code = "AV-" + Math.floor(1000 + Math.random() * 9000);
+        while (codes.has(code));
+        await db.put("bookings", {
+          id: api.newId(),
+          code,
+          service_id: svc.id,
+          service_name: svc.name,
+          options_text: S.optionsText(svc, p.choices),
+          choices: p.choices || {},
+          master_id: masterId,
+          date: p.date,
+          start_min: p.start_min,
+          duration_min: svc.duration_min,
+          price: S.priceFor(svc, p.choices),
+          client_name: String(p.client_name).trim(),
+          client_phone: p.client_phone,
+          comment: p.comment || "",
+          status: "new",
+          source: "site",
+          created_at: now,
+          updated_at: now,
+        });
+        return { code, master_id: masterId };
+      });
     },
 
     // Повернути тестові дані (усе, що змінено, зникне)

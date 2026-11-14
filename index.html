@@ -82,7 +82,7 @@
         <a class="ulink" href="#contacts">Контакти</a>
       </nav>
       <div class="header__actions intro intro--nav">
-        <a class="header__phone ulink" href="tel:+380000000000">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a>
+        <a class="header__phone ulink" href="tel:+380000000000" data-phone="0">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a>
         <a class="btn btn--solid btn--sm" href="booking.html" data-nav>
           <span class="btn__fill"></span><span class="btn__label">Записатися</span>
         </a>
@@ -104,7 +104,7 @@
         <span class="btn__fill"></span><span class="btn__label">Записатися онлайн</span>
         <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
       </a>
-      <a class="btn btn--ghost" href="tel:+380000000000">
+      <a class="btn btn--ghost" href="tel:+380000000000" data-phone="0">
         <span class="btn__fill"></span><span class="btn__label">Зателефонувати</span>
       </a>
     </div>
@@ -124,20 +124,20 @@
       <div class="hero__veil" aria-hidden="true"></div>
 
       <div class="container hero__content">
-        <span class="label intro intro--label">Салон краси у&nbsp;Львові / вул.&nbsp;Тестова,&nbsp;12</span>
+        <span class="label intro intro--label" data-text="hero.label">Салон краси у&nbsp;Львові / вул.&nbsp;Тестова,&nbsp;12</span>
         <h1 class="hero__title intro intro--title">AVER<span class="sr-only">, салон краси у Львові</span></h1>
-        <p class="hero__sub intro intro--sub">Преміальний догляд за&nbsp;волоссям,<br>нігтями й&nbsp;обличчям без&nbsp;поспіху</p>
+        <p class="hero__sub intro intro--sub" data-text="hero.sub">Преміальний догляд за&nbsp;волоссям,<br>нігтями й&nbsp;обличчям без&nbsp;поспіху</p>
         <div class="intro intro--cta">
           <div class="hero__cta">
             <a class="btn btn--solid" href="booking.html" data-nav>
               <span class="btn__fill"></span><span class="btn__label">Записатися</span>
               <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
             </a>
-            <a class="btn btn--ghost" href="tel:+380000000000">
+            <a class="btn btn--ghost" href="tel:+380000000000" data-phone="0">
               <span class="btn__fill"></span><span class="btn__label">Зателефонувати</span>
             </a>
           </div>
-          <p class="hero__note">Онлайн-запис за&nbsp;1&nbsp;хвилину</p>
+          <p class="hero__note" data-text="hero.note">Онлайн-запис за&nbsp;1&nbsp;хвилину</p>
         </div>
       </div>
     </section>
@@ -148,14 +148,14 @@
         <div class="section__head">
           <div class="rise">
             <span class="label">01 / Послуги</span>
-            <h2 id="services-title">Послуги<br>та&nbsp;ціни</h2>
+            <h2 id="services-title" data-text="sections.services.title">Послуги<br>та&nbsp;ціни</h2>
           </div>
-          <p class="rise d1">Ціни вказані за&nbsp;базову процедуру. Вартість фарбування й&nbsp;догляду залежить від&nbsp;довжини волосся, майстер назве її до&nbsp;початку роботи.</p>
+          <p class="rise d1" data-text="sections.services.lead">Ціни вказані за&nbsp;базову процедуру. Вартість фарбування й&nbsp;догляду залежить від&nbsp;довжини волосся, майстер назве її до&nbsp;початку роботи.</p>
         </div>
         <div class="tabs rise" role="tablist" aria-label="Категорії послуг" data-services-tabs></div>
         <div class="rise d1" data-services-panels></div>
         <noscript><p>Щоб побачити перелік послуг, увімкніть JavaScript або зателефонуйте нам.</p></noscript>
-        <p class="services__note">Майстра можна обрати під&nbsp;час онлайн-запису.</p>
+        <p class="services__note" data-text="sections.services.note">Майстра можна обрати під&nbsp;час онлайн-запису.</p>
       </div>
     </section>
 
@@ -165,12 +165,12 @@
         <div class="section__head">
           <div class="rise">
             <span class="label">02 / Роботи</span>
-            <h2 id="works-title">Роботи<br>наших майстрів</h2>
+            <h2 id="works-title" data-text="sections.works.title">Роботи<br>наших майстрів</h2>
           </div>
-          <p class="rise d1">Кадри з&nbsp;щоденної роботи наших майстрів: колір, укладання, манікюр і&nbsp;догляд.</p>
+          <p class="rise d1" data-text="sections.works.lead">Кадри з&nbsp;щоденної роботи наших майстрів: колір, укладання, манікюр і&nbsp;догляд.</p>
         </div>
         <!-- ФОТО: assets/photos/work-1..6.jpg (Pexels) -->
-        <ul class="works">
+        <ul class="works" data-works>
           <li class="rise"><figure class="work"><div class="work__img"><img class="photo" src="assets/photos/work-1.jpg" alt="Фарбування волосся із фольгою, світле волосся" width="1000" height="1500" loading="lazy"></div><figcaption>Фарбування волосся <span class="work__who">Олена&nbsp;Бондар</span></figcaption></figure></li>
           <li class="rise d1"><figure class="work"><div class="work__img"><img class="photo" src="assets/photos/work-2.jpg" alt="Дівчина з довгим кучерявим волоссям каштанового кольору" width="1000" height="1777" loading="lazy"></div><figcaption>Локони й&nbsp;укладання <span class="work__who">Марія&nbsp;Коваленко</span></figcaption></figure></li>
           <li class="rise d2"><figure class="work"><div class="work__img"><img class="photo" src="assets/photos/work-3.jpg" alt="Майстер наносить червоний гель-лак" width="1000" height="1333" loading="lazy"></div><figcaption>Манікюр з&nbsp;гель-лаком <span class="work__who">Софія&nbsp;Мельник</span></figcaption></figure></li>
@@ -187,20 +187,20 @@
         <div class="section__head">
           <div class="rise">
             <span class="label">03 / Салон</span>
-            <h2 id="salon-title">Тихий простір<br>у&nbsp;центрі Львова</h2>
+            <h2 id="salon-title" data-text="sections.salon.title">Тихий простір<br>у&nbsp;центрі Львова</h2>
           </div>
-          <p class="rise d1">Чотири зони на&nbsp;одному поверсі старого будинку: світло з&nbsp;вікон, тепле дерево й&nbsp;жодної музики, яку треба перекрикувати.</p>
+          <p class="rise d1" data-text="sections.salon.lead">Чотири зони на&nbsp;одному поверсі старого будинку: світло з&nbsp;вікон, тепле дерево й&nbsp;жодної музики, яку треба перекрикувати.</p>
         </div>
 
         <div class="salon__wrap">
           <!-- ФОТО: assets/photos/salon-1..4.jpg (Pexels) -->
-          <div class="salon__stage">
+          <div class="salon__stage" data-salon-stage>
             <img class="photo is-active" data-salon-img src="assets/photos/salon-1.jpg" alt="Стиліст біля зони миття голови, світла стіна з картиною" width="1200" height="1800">
             <img class="photo" data-salon-img src="assets/photos/salon-2.jpg" alt="Зона манікюру й педикюру з арочним вікном" width="1800" height="1201" loading="lazy">
             <img class="photo" data-salon-img src="assets/photos/salon-3.jpg" alt="Світлий кабінет догляду з рожевими жалюзі й масажним столом" width="1800" height="1200" loading="lazy">
             <img class="photo" data-salon-img src="assets/photos/salon-4.jpg" alt="Полиці з професійною косметикою для догляду" width="1200" height="1800" loading="lazy">
           </div>
-          <ol class="salon__steps">
+          <ol class="salon__steps" data-salon-steps>
             <li class="salon__step is-active" data-salon-step="0">
               <span class="salon__num">01</span>
               <h3>Зал стилістів</h3>
@@ -232,9 +232,9 @@
         <div class="section__head">
           <div class="rise">
             <span class="label">04 / Відгуки</span>
-            <h2 id="reviews-title">Що кажуть<br>наші гості</h2>
+            <h2 id="reviews-title" data-text="sections.reviews.title">Що кажуть<br>наші гості</h2>
           </div>
-          <p class="rise d1">Відгуки, які гості залишили після візиту. Ми нічого не&nbsp;скорочували й&nbsp;не&nbsp;редагували.</p>
+          <p class="rise d1" data-text="sections.reviews.lead">Відгуки, які гості залишили після візиту. Ми нічого не&nbsp;скорочували й&nbsp;не&nbsp;редагували.</p>
         </div>
 
         <ul class="reviews__track rise" tabindex="0" aria-label="Відгуки клієнтів, гортайте вбік" data-reviews>
@@ -277,10 +277,10 @@
         <div class="section__head">
           <div class="rise">
             <span class="label">05 / Чому AVER</span>
-            <h2 id="why-title">Чому гості<br>повертаються</h2>
+            <h2 id="why-title" data-text="sections.why.title">Чому гості<br>повертаються</h2>
           </div>
         </div>
-        <ol class="why">
+        <ol class="why" data-why>
           <li class="why__item rise">
             <span class="why__num" aria-hidden="true">01</span>
             <h3>Досвідчені майстри</h3>
@@ -316,9 +316,9 @@
         <div class="section__head">
           <div class="rise">
             <span class="label">06 / Команда</span>
-            <h2 id="team-title">Команда<br>майстрів</h2>
+            <h2 id="team-title" data-text="sections.team.title">Команда<br>майстрів</h2>
           </div>
-          <p class="rise d1">Шестеро майстрів, кожен відповідає за&nbsp;свій напрям. Хочете до&nbsp;когось конкретного? Оберіть майстра під&nbsp;час онлайн-запису.</p>
+          <p class="rise d1" data-text="sections.team.lead">Шестеро майстрів, кожен відповідає за&nbsp;свій напрям. Хочете до&nbsp;когось конкретного? Оберіть майстра під&nbsp;час онлайн-запису.</p>
         </div>
         <!-- майстри підставляються з адмінки (script.js), ця розмітка лишається на випадок помилки -->
         <ul class="team" data-team>
@@ -371,8 +371,8 @@
       <div class="hero__veil" aria-hidden="true"></div>
       <div class="container cta__content">
         <span class="label rise">Запис</span>
-        <h2 class="rise" id="cta-title">Час подбати<br>про&nbsp;себе</h2>
-        <p class="rise d1">Оберіть процедуру та&nbsp;вільний час онлайн або&nbsp;зателефонуйте, і&nbsp;ми підберемо зручний день.</p>
+        <h2 class="rise" id="cta-title" data-text="sections.cta.title">Час подбати<br>про&nbsp;себе</h2>
+        <p class="rise d1" data-text="sections.cta.lead">Оберіть процедуру та&nbsp;вільний час онлайн або&nbsp;зателефонуйте, і&nbsp;ми підберемо зручний день.</p>
         <div class="cta__actions rise d2">
           <a class="btn btn--solid" href="booking.html" data-nav>
             <span class="btn__fill"></span><span class="btn__label">Записатися</span>
@@ -380,8 +380,8 @@
           </a>
         </div>
         <ul class="phones rise d3">
-          <li><a class="ulink" href="tel:+380000000000">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a></li>
-          <li><a class="ulink" href="tel:+380000000001">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;01</a></li>
+          <li><a class="ulink" href="tel:+380000000000" data-phone="0">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a></li>
+          <li><a class="ulink" href="tel:+380000000001" data-phone="1">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;01</a></li>
         </ul>
       </div>
     </section>
@@ -393,29 +393,29 @@
       <div class="footer__grid">
         <div class="footer__brand">
           <span class="label">AVER</span>
-          <p>AVER відкрився у&nbsp;2019&nbsp;році як&nbsp;невелика студія колориста Олени Бондар. Сьогодні це шестеро майстрів, чотири зони й&nbsp;та&nbsp;сама ідея: доглянутий вигляд без&nbsp;поспіху та&nbsp;зайвого шуму.</p>
+          <p data-text="story">AVER відкрився у&nbsp;2019&nbsp;році як&nbsp;невелика студія колориста Олени Бондар. Сьогодні це шестеро майстрів, чотири зони й&nbsp;та&nbsp;сама ідея: доглянутий вигляд без&nbsp;поспіху та&nbsp;зайвого шуму.</p>
         </div>
         <div>
           <h2>Контакти</h2>
           <ul>
-            <li><a class="ulink" href="tel:+380000000000"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a></li>
-            <li><a class="ulink" href="tel:+380000000001"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>+380&nbsp;00&nbsp;000&nbsp;00&nbsp;01</a></li>
-            <li><a class="ulink" href="mailto:hello@aver.example"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>hello@aver.example</a></li>
+            <li><a class="ulink" href="tel:+380000000000" data-phone="0"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a></li>
+            <li><a class="ulink" href="tel:+380000000001" data-phone="1"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>+380&nbsp;00&nbsp;000&nbsp;00&nbsp;01</a></li>
+            <li><a class="ulink" href="mailto:hello@aver.example" data-email><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>hello@aver.example</a></li>
           </ul>
         </div>
         <div>
           <h2>Адреса</h2>
           <address>
-            <a class="ulink" href="https://www.google.com/maps/search/?api=1&amp;query=%D0%9B%D1%8C%D0%B2%D1%96%D0%B2" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>Львів, вул.&nbsp;Тестова,&nbsp;12</a>
+            <a class="ulink" data-address href="https://www.google.com/maps/search/?api=1&amp;query=%D0%9B%D1%8C%D0%B2%D1%96%D0%B2" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>Львів, вул.&nbsp;Тестова,&nbsp;12</a>
           </address>
           <p class="muted" data-hours>Пн–Сб 09:00–20:00<br>Неділя: вихідний</p>
         </div>
         <div>
           <h2>Соцмережі</h2>
           <ul>
-            <li><a class="ulink" href="https://www.instagram.com/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg>Instagram</a></li>
-            <li><a class="ulink" href="https://t.me/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Telegram</a></li>
-            <li><a class="ulink" href="https://www.facebook.com/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-facebook"/></svg>Facebook</a></li>
+            <li><a class="ulink" data-social="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg>Instagram</a></li>
+            <li><a class="ulink" data-social="telegram" href="https://t.me/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Telegram</a></li>
+            <li><a class="ulink" data-social="facebook" href="https://www.facebook.com/" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-facebook"/></svg>Facebook</a></li>
           </ul>
         </div>
       </div>
@@ -431,7 +431,7 @@
       <span class="btn__fill"></span><span class="btn__label">Записатися</span>
       <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
     </a>
-    <a class="btn btn--ghost" href="tel:+380000000000" aria-label="Зателефонувати" tabindex="-1">
+    <a class="btn btn--ghost" href="tel:+380000000000" data-phone="0" aria-label="Зателефонувати" tabindex="-1">
       <span class="btn__fill"></span><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>
     </a>
   </div>

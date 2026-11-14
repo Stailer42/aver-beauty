@@ -25,16 +25,210 @@
     initHeaderAndScroll();
     initMenu();
     initActiveNav();
-    initSalon();
-    initReviews();
 
     // блоки з даних адмінки малюємо до анімацій появи, щоб нові елементи теж "виринали"
     const ok = await dataReady();
+    initContent(ok);
     initServices(ok);
+    initWorks(ok);
+    initSalonData(ok);
+    initSalon();
+    initReviewsData(ok);
+    initReviews();
+    initWhy(ok);
     initTeam(ok);
     initHours(ok);
     initReveal();
   });
+
+  /* ---------- Допоміжне для даних з адмінки ---------- */
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  // Текст із "\n" -> рядки з <br> (лише текст, без HTML)
+  function setLines(node, text) {
+    node.textContent = "";
+    String(text).split("\n").forEach((line, i) => {
+      if (i) node.appendChild(document.createElement("br"));
+      node.appendChild(document.createTextNode(line));
+    });
+  }
+
+  // Замінити текст посилання, не чіпаючи іконку всередині
+  function setLinkText(a, text) {
+    const nodes = [...a.childNodes].filter((n) => n.nodeType === 3 && n.nodeValue.trim());
+    if (nodes.length) nodes[nodes.length - 1].nodeValue = text;
+  }
+
+  // Секція без даних ховається разом із пунктами меню, що на неї ведуть
+  function hideSection(id) {
+    const s = document.getElementById(id);
+    if (s) s.hidden = true;
+    document.querySelectorAll('a[href="#' + id + '"]').forEach((a) => ((a.closest("li") || a).hidden = true));
+  }
+
+  /* ---------- Тексти, контакти, соцмережі ---------- */
+  function initContent(ok) {
+    if (!ok || !AVER.content) return;
+    const c = AVER.content;
+    const T = window.AVERText;
+    const nb = (s) => String(s).replace(/ /g, T.NB);
+
+    document.querySelectorAll("[data-text]").forEach((node) => {
+      const v = node.dataset.text.split(".").reduce((o, k) => (o ? o[k] : undefined), c);
+      if (typeof v === "string" && v.trim()) setLines(node, v);
+    });
+
+    const ct = c.contacts || {};
+    const phones = ct.phones || [];
+    document.querySelectorAll("[data-phone]").forEach((a) => {
+      const p = phones[Number(a.dataset.phone)];
+      if (!p) {
+        (a.closest("li") || a).hidden = true;
+        return;
+      }
+      a.href = T.phoneHref(p);
+      if (/\d/.test(a.textContent)) setLinkText(a, nb(p));
+    });
+
+    document.querySelectorAll("[data-email]").forEach((a) => {
+      if (!ct.email) {
+        (a.closest("li") || a).hidden = true;
+        return;
+      }
+      a.href = "mailto:" + ct.email;
+      setLinkText(a, ct.email);
+    });
+
+    const place = [ct.city, ct.street].filter(Boolean);
+    const mapUrl = ct.map_url || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(place.join(", "));
+    document.querySelectorAll("[data-address]").forEach((a) => {
+      a.href = mapUrl;
+      setLinkText(a, [ct.city, nb(ct.street || "")].filter(Boolean).join(", "));
+    });
+    document.querySelectorAll("[data-address-label]").forEach((s) => {
+      s.textContent = "AVER / " + [ct.city, nb(ct.street || "")].filter(Boolean).join(", ");
+    });
+
+    const so = c.socials || {};
+    document.querySelectorAll("[data-social]").forEach((a) => {
+      const url = so[a.dataset.social];
+      if (!url) (a.closest("li") || a).hidden = true;
+      else a.href = url;
+    });
+
+    // дані для Google (schema.org)
+    const ld = document.querySelector('script[type="application/ld+json"]');
+    if (ld) {
+      try {
+        const data = JSON.parse(ld.textContent);
+        if (phones[0]) data.telephone = "+" + phones[0].replace(/\D/g, "");
+        if (ct.email) data.email = ct.email;
+        data.address = { ...data.address, streetAddress: ct.street || "", addressLocality: ct.city || "" };
+        data.sameAs = Object.values(so).filter(Boolean);
+        ld.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        /* зіпсований JSON-LD: лишаємо як є */
+      }
+    }
+  }
+
+  /* ---------- Роботи (галерея) ---------- */
+  function initWorks(ok) {
+    const list = document.querySelector("[data-works]");
+    if (!list || !ok) return;
+    if (!AVER.works.length) return hideSection("works");
+    list.textContent = "";
+    AVER.works.forEach((w, i) => {
+      const li = el("li", "rise" + (i % 3 ? " d" + (i % 3) : ""));
+      const fig = el("figure", "work");
+      const box = el("div", "work__img");
+      const img = el("img", "photo");
+      img.src = w.src;
+      img.alt = w.alt;
+      if (w.width) img.width = w.width;
+      if (w.height) img.height = w.height;
+      img.loading = "lazy";
+      img.style.objectPosition = "50% " + w.focus + "%"; // точка кадрування з адмінки
+      box.appendChild(img);
+      const cap = el("figcaption");
+      cap.appendChild(document.createTextNode(w.caption + (w.master ? " " : "")));
+      if (w.master) cap.appendChild(el("span", "work__who", w.master.replace(/ /g, " ")));
+      fig.append(box, cap);
+      li.appendChild(fig);
+      list.appendChild(li);
+    });
+  }
+
+  /* ---------- Салон: зони з фото ---------- */
+  function initSalonData(ok) {
+    const stage = document.querySelector("[data-salon-stage]");
+    const steps = document.querySelector("[data-salon-steps]");
+    if (!stage || !steps || !ok) return;
+    if (!AVER.salon.length) return hideSection("salon");
+    stage.textContent = "";
+    steps.textContent = "";
+    AVER.salon.forEach((z, i) => {
+      const img = el("img", "photo" + (i === 0 ? " is-active" : ""));
+      img.dataset.salonImg = "";
+      img.src = z.src;
+      img.alt = z.alt;
+      if (z.width) img.width = z.width;
+      if (z.height) img.height = z.height;
+      if (i) img.loading = "lazy";
+      if (z.focus !== 50) img.style.objectPosition = "50% " + z.focus + "%";
+      stage.appendChild(img);
+
+      const li = el("li", "salon__step" + (i === 0 ? " is-active" : ""));
+      li.dataset.salonStep = String(i);
+      li.append(el("span", "salon__num", String(i + 1).padStart(2, "0")), el("h3", null, z.title));
+      if (z.text) li.appendChild(el("p", null, z.text));
+      steps.appendChild(li);
+    });
+  }
+
+  /* ---------- Відгуки ---------- */
+  function initReviewsData(ok) {
+    const track = document.querySelector("[data-reviews]");
+    if (!track || !ok) return;
+    if (!AVER.reviews.length) return hideSection("reviews");
+    const quote = track.querySelector(".review__quote");
+    track.textContent = "";
+    AVER.reviews.forEach((r) => {
+      const li = el("li", "review");
+      if (quote) li.appendChild(quote.cloneNode(true));
+      li.appendChild(el("p", null, r.text));
+      const foot = el("footer");
+      foot.appendChild(el("cite", null, r.author));
+      if (r.service) foot.appendChild(el("span", "muted", r.service));
+      li.appendChild(foot);
+      track.appendChild(li);
+    });
+    // з одним-двома відгуками гортати нема куди
+    const ctrl = document.querySelector(".reviews__ctrl");
+    if (ctrl) ctrl.hidden = AVER.reviews.length < 3;
+  }
+
+  /* ---------- Чому AVER ---------- */
+  function initWhy(ok) {
+    const list = document.querySelector("[data-why]");
+    if (!list || !ok || !AVER.content) return;
+    const items = (AVER.content.why || []).filter((w) => w.title);
+    if (!items.length) return hideSection("why");
+    list.textContent = "";
+    items.forEach((w, i) => {
+      const li = el("li", "why__item rise");
+      const num = el("span", "why__num", String(i + 1).padStart(2, "0"));
+      num.setAttribute("aria-hidden", "true");
+      li.append(num, el("h3", null, w.title));
+      if (w.text) li.appendChild(el("p", null, w.text));
+      list.appendChild(li);
+    });
+  }
 
   /* ---------- Години роботи з розкладу адмінки: футер і дані для Google ---------- */
   function initHours(ok) {
