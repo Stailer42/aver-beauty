@@ -146,3 +146,32 @@ test("текст годин роботи", () => {
   const monOff = { hours: { ...base.hours, 1: null } };
   assert.deepEqual(S.hoursLines(monOff), ["Вт–Сб 09:00–20:00", "Пн, Нд: вихідні"], "вихідні після робочих днів");
 });
+
+test("номер запису: унікальний і цикл завершується, навіть коли чотиризначні скінчились", () => {
+  const taken = new Set(["AV-1000"]);
+  for (let i = 0; i < 200; i++) {
+    const c = S.newCode(taken);
+    assert.match(c, /^AV-\d{4}$/);
+    assert.ok(!taken.has(c));
+    taken.add(c);
+  }
+  const all = new Set(Array.from({ length: 9000 }, (_, i) => "AV-" + (1000 + i)));
+  assert.match(S.newCode(all), /^AV-\d{6}$/);
+});
+
+test("зламаний крок слотів не вішає сторінку", () => {
+  for (const slot_step of [0, -30, "abc", null]) {
+    const r = S.freeSlots({ date: MON, duration: 60, masters: [olena], bookings: [], settings: { ...settings, slot_step } });
+    assert.ok(r.length > 0 && r.length <= 132, String(slot_step));
+  }
+});
+
+test("нерозривні пробіли: слова підряд і початок рядка (без lookbehind)", () => {
+  const T = globalThis.AVERText;
+  const NB = T.NB;
+  assert.equal(T.nbsp("а і в дім"), "а" + NB + "і" + NB + "в" + NB + "дім");
+  assert.equal(T.nbsp("(в салоні) «на каві»"), "(в" + NB + "салоні) «на" + NB + "каві»");
+  assert.equal(T.nbsp("вона в дім"), "вона в" + NB + "дім");
+  assert.equal(T.nbsp("Ів пішов"), "Ів пішов"); // "в" усередині слова не чіпаємо
+  assert.equal(T.nbsp("ціна 1 200 ₴"), "ціна 1" + NB + "200" + NB + "₴");
+});

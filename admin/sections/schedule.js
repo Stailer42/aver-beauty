@@ -255,10 +255,13 @@
       const days = T.WEEK_ORDER.map((d) => {
         const input = h("input", { type: "checkbox", checked: (m.work_days || []).includes(d), "aria-label": m.name + ": " + S.DAY_FULL[d] });
         input.addEventListener("change", async () => {
-          const work_days = [...(m.work_days || []).filter((x) => x !== d), ...(input.checked ? [d] : [])].sort();
+          // свіжий рядок із бази: після load() у data.masters уже інші об'єкти, ніж m у цьому замиканні
+          const cur = (await AVERDB.get("masters", m.id)) || m;
+          const work_days = [...(cur.work_days || []).filter((x) => x !== d), ...(input.checked ? [d] : [])].sort();
           m.work_days = work_days;
-          await AVERDB.put("masters", { ...m, work_days });
-          const n = input.checked ? 0 : outsideCount(data.settings, data.closures, data.masters);
+          await AVERDB.put("masters", { ...cur, work_days });
+          const masters = data.masters.map((x) => (x.id === m.id ? { ...cur, work_days } : x));
+          const n = input.checked ? 0 : outsideCount(data.settings, data.closures, masters);
           UI.toast(m.name + ": " + (work_days.length ? T.dayRanges(work_days) : "немає робочих днів"));
           await load();
           setTimeout(() => warnOutside(n), n ? 2500 : 0);

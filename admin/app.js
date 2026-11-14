@@ -26,6 +26,14 @@
   let user = null;
   let renderSeq = 0;
 
+  // Збій бази (переповнене сховище, закрите з'єднання) у будь-якому збереженні:
+  // замість тиші показуємо, що зміни не записались. Самі розділи ловлять лише очікувані помилки.
+  window.addEventListener("unhandledrejection", (e) => {
+    console.error(e.reason);
+    if (!user) return; // до входу помилки показує екран входу
+    UI.toast("Не вдалося зберегти зміни. Оновіть сторінку й спробуйте ще раз.", "error");
+  });
+
   const Admin = {
     SECTIONS,
     register(id, def) {

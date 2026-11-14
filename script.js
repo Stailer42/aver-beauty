@@ -80,7 +80,10 @@
 
     document.querySelectorAll("[data-text]").forEach((node) => {
       const v = node.dataset.text.split(".").reduce((o, k) => (o ? o[k] : undefined), c);
-      if (typeof v === "string" && v.trim()) setLines(node, v);
+      if (typeof v !== "string") return; // такого поля в базі немає: лишається текст з розмітки
+      // поле очистили в адмінці: ховаємо, а не показуємо старий текст з розмітки
+      node.hidden = !v.trim();
+      if (v.trim()) setLines(node, v);
     });
 
     const ct = c.contacts || {};
@@ -411,7 +414,7 @@
       const masters = document.createElement("p");
       masters.className = "services__masters";
       masters.textContent = "Майстри: " + cat.masters;
-      panel.appendChild(masters);
+      if (cat.masters) panel.appendChild(masters);
 
       const list = document.createElement("ul");
       list.className = "svc-list";
@@ -474,7 +477,8 @@
   /* ---------- Команда: майстри з даних адмінки ---------- */
   function initTeam(ok) {
     const list = document.querySelector("[data-team]");
-    if (!list || !ok || !AVER.masters.length) return; // інакше лишається розмітка з index.html
+    if (!list || !ok) return; // базу не відкрито: лишається розмітка з index.html
+    if (!AVER.masters.length) return hideSection("team"); // усіх майстрів сховали
     const T = window.AVERText;
     list.innerHTML = "";
     AVER.masters.forEach((m, i) => {

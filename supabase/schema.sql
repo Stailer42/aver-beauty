@@ -21,7 +21,7 @@ create table if not exists admins (
 );
 
 create or replace function is_admin() returns boolean
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = public, pg_temp as $$
   select exists (select 1 from admins where user_id = auth.uid());
 $$;
 
@@ -40,7 +40,9 @@ create table if not exists closures (
   date  date not null unique,
   open  text,                              -- "10:00" або null = вихідний
   close text,
-  note  text not null default ''
+  note  text not null default '',
+  -- або обидва поля (скорочений день), або жодного (вихідний)
+  check ((open is null) = (close is null))
 );
 
 -- ---------- послуги ----------
@@ -163,26 +165,44 @@ alter table photos     enable row level security;
 alter table reviews    enable row level security;
 alter table content    enable row level security;
 
+drop policy if exists "admins: свій рядок" on admins;
 create policy "admins: свій рядок" on admins for select using (user_id = auth.uid());
 
+drop policy if exists "публічне читання" on settings;
 create policy "публічне читання" on settings   for select using (true);
+drop policy if exists "публічне читання" on closures;
 create policy "публічне читання" on closures   for select using (true);
+drop policy if exists "публічне читання" on content;
 create policy "публічне читання" on content    for select using (true);
+drop policy if exists "публічне читання" on categories;
 create policy "публічне читання" on categories for select using (visible or is_admin());
+drop policy if exists "публічне читання" on services;
 create policy "публічне читання" on services   for select using (visible or is_admin());
+drop policy if exists "публічне читання" on masters;
 create policy "публічне читання" on masters    for select using (visible or is_admin());
+drop policy if exists "публічне читання" on photos;
 create policy "публічне читання" on photos     for select using (visible or is_admin());
+drop policy if exists "публічне читання" on reviews;
 create policy "публічне читання" on reviews    for select using (visible or is_admin());
 
+drop policy if exists "адмін змінює" on settings;
 create policy "адмін змінює" on settings   for all using (is_admin()) with check (is_admin());
+drop policy if exists "адмін змінює" on closures;
 create policy "адмін змінює" on closures   for all using (is_admin()) with check (is_admin());
+drop policy if exists "адмін змінює" on content;
 create policy "адмін змінює" on content    for all using (is_admin()) with check (is_admin());
+drop policy if exists "адмін змінює" on categories;
 create policy "адмін змінює" on categories for all using (is_admin()) with check (is_admin());
+drop policy if exists "адмін змінює" on services;
 create policy "адмін змінює" on services   for all using (is_admin()) with check (is_admin());
+drop policy if exists "адмін змінює" on masters;
 create policy "адмін змінює" on masters    for all using (is_admin()) with check (is_admin());
+drop policy if exists "адмін змінює" on photos;
 create policy "адмін змінює" on photos     for all using (is_admin()) with check (is_admin());
+drop policy if exists "адмін змінює" on reviews;
 create policy "адмін змінює" on reviews    for all using (is_admin()) with check (is_admin());
 -- записи (імена й телефони клієнтів) бачить і змінює лише адмін
+drop policy if exists "адмін змінює" on bookings;
 create policy "адмін змінює" on bookings   for all using (is_admin()) with check (is_admin());
 
 -- =========================================================
@@ -192,25 +212,35 @@ create policy "адмін змінює" on bookings   for all using (is_admin())
 -- Зайнятий час на дату: лише проміжки, без імен і телефонів
 create or replace function busy_slots(p_date date)
 returns table (master_id text, start_min int, end_min int)
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = public, pg_temp as $$
   select b.master_id, b.start_min, b.start_min + b.duration_min
   from bookings b
   where b.date = p_date and b.status <> 'cancelled';
 $$;
 
--- Запис із сайту. Ціну й тривалість рахує сервер (не довіряємо браузеру).
+-- Запис із сайту. Ціну, тривалість і майстра рахує сервер (браузеру не довіряємо).
+-- Те саме, що AVERDB.createBooking у db-local.js, з тими самими кодами помилок:
+--   bad_name, bad_phone, bad_choice, service_not_found, slot_taken
+-- (slot_taken = цей час недоступний з будь-якої причини: зайнято, вихідний,
+--  поза годинами, не по сітці слотів, замало часу до візиту, задалеко наперед;
+--  сайт тоді просто просить обрати інший час).
 -- p_choices: {"length": 1, "design": 0} = індекс обраного варіанта в кожній групі
 -- p_master_id: null = будь-який вільний майстер
+-- Повертає {"code": "AV-1234", "master_id": "m-anna"}: сайт показує, до кого записано.
+-- стара версія повертала text: тип результату через create or replace не змінити
+drop function if exists create_booking(text, text, date, int, jsonb, text, text, text);
 create or replace function create_booking(
   p_service_id text, p_master_id text, p_date date, p_start_min int,
   p_choices jsonb, p_client_name text, p_client_phone text, p_comment text
-) returns text
-language plpgsql security definer set search_path = public as $$
+) returns jsonb
+language plpgsql security definer set search_path = public, pg_temp as $$
 declare
   s        services;
   st       settings;
   g        jsonb;
   ch       jsonb;
+  v_raw    text;
+  v_label  text;
   v_price  int;
   v_text   text := '';
   v_hours  jsonb;
@@ -218,74 +248,101 @@ declare
   v_close  int;
   v_master text;
   v_code   text;
-  v_now    timestamp := now() at time zone 'Europe/Kyiv';
-  v_dow    int := extract(dow from p_date)::int;
+  v_kyiv   timestamp := now() at time zone 'Europe/Kyiv';
+  v_today  date := (now() at time zone 'Europe/Kyiv')::date;
+  v_dow    int;
+  v_try    int;
   c        closures;
 begin
-  if length(trim(coalesce(p_client_name, ''))) < 2 then raise exception 'bad_name'; end if;
-  if length(regexp_replace(coalesce(p_client_phone, ''), '\D', '', 'g')) <> 12 then raise exception 'bad_phone'; end if;
+  -- клієнт
+  if length(trim(coalesce(p_client_name, ''))) not between 2 and 60 then raise exception 'bad_name'; end if;
+  if length(coalesce(p_client_phone, '')) > 20
+     or regexp_replace(coalesce(p_client_phone, ''), '\D', '', 'g') !~ '^380[0-9]{9}$' then raise exception 'bad_phone'; end if;
+  if p_date is null or p_start_min is null then raise exception 'slot_taken'; end if;
+  v_dow := extract(dow from p_date)::int;
 
   select * into s from services where id = p_service_id and visible;
   if not found then raise exception 'service_not_found'; end if;
   select * into st from settings where id = 'main';
 
-  -- ціна й опис обраних параметрів
+  -- ціна й опис обраних параметрів; індекс лише ціле число >= 0 у межах списку
+  if p_choices is not null and jsonb_typeof(p_choices) <> 'object' then raise exception 'bad_choice'; end if;
   v_price := s.price;
   for g in select * from jsonb_array_elements(s.options) loop
-    ch := g -> 'choices' -> coalesce((p_choices ->> (g ->> 'id'))::int, 0);
+    v_raw := p_choices ->> (g ->> 'id');
+    if v_raw is not null and v_raw !~ '^[0-9]{1,3}$' then raise exception 'bad_choice'; end if;
+    ch := g -> 'choices' -> coalesce(v_raw::int, 0);
     if ch is null then raise exception 'bad_choice'; end if;
-    v_price := v_price + (ch ->> 'add')::int;
-    v_text := v_text || case when v_text = '' then '' else '; ' end || (g ->> 'label') || ': ' || lower(ch ->> 'label');
+    v_price := v_price + coalesce((ch ->> 'add')::int, 0);
+    v_label := coalesce(ch ->> 'label', '');
+    -- як optionsText у schedule.js: з малої лише перша літера ("2D" лишається "2D")
+    v_text := v_text || case when v_text = '' then '' else '; ' end
+              || (g ->> 'label') || ': ' || lower(left(v_label, 1)) || substr(v_label, 2);
   end loop;
   if v_text = '' then v_text := 'без додаткових параметрів'; end if;
 
   -- робочі години з урахуванням винятків
   select * into c from closures where date = p_date;
   if found then
-    if c.open is null then raise exception 'closed'; end if;
+    if c.open is null then raise exception 'slot_taken'; end if;  -- вихідний
     v_open := split_part(c.open, ':', 1)::int * 60 + split_part(c.open, ':', 2)::int;
     v_close := split_part(c.close, ':', 1)::int * 60 + split_part(c.close, ':', 2)::int;
   else
     v_hours := st.hours -> v_dow::text;
-    if v_hours is null or v_hours = 'null'::jsonb then raise exception 'closed'; end if;
+    if v_hours is null or v_hours = 'null'::jsonb then raise exception 'slot_taken'; end if;
     v_open := split_part(v_hours ->> 0, ':', 1)::int * 60 + split_part(v_hours ->> 0, ':', 2)::int;
     v_close := split_part(v_hours ->> 1, ':', 1)::int * 60 + split_part(v_hours ->> 1, ':', 2)::int;
   end if;
-  if p_start_min < v_open or p_start_min + s.duration_min > v_close then raise exception 'outside_hours'; end if;
-  if p_date + make_interval(mins => p_start_min) < v_now + make_interval(mins => st.lead_min) then raise exception 'too_late'; end if;
-  if p_date > (v_now::date + st.days_ahead) then raise exception 'too_far'; end if;
+  -- у межах годин і рівно по сітці слотів (як freeSlots у schedule.js)
+  if p_start_min < v_open or p_start_min + s.duration_min > v_close
+     or mod(p_start_min - v_open, st.slot_step) <> 0 then raise exception 'slot_taken'; end if;
+  -- минулі дні закриті; сьогодні не раніше ніж за lead_min; днів наперед: days_ahead, рахуючи сьогодні
+  if p_date < v_today or p_date >= v_today + st.days_ahead then raise exception 'slot_taken'; end if;
+  if p_date = v_today
+     and p_start_min < extract(hour from v_kyiv)::int * 60 + extract(minute from v_kyiv)::int + st.lead_min
+  then raise exception 'slot_taken'; end if;
 
-  -- майстер: обраний або перший вільний, хто виконує послугу й працює в цей день
-  select m.id into v_master
-  from masters m
-  where m.visible
-    and p_service_id = any (m.service_ids)
-    and v_dow = any (m.work_days)
-    and (p_master_id is null or m.id = p_master_id)
-    and not exists (
-      select 1 from bookings b
-      where b.master_id = m.id and b.date = p_date and b.status <> 'cancelled'
-        and b.slot && int4range(p_start_min, p_start_min + s.duration_min)
-    )
-  order by m.sort
-  limit 1;
-  if v_master is null then raise exception 'slot_taken'; end if;
+  -- Майстер: обраний або перший вільний. Якщо двоє одночасно взяли того самого
+  -- "будь-якого" майстра, база відхилить другого (exclusion_violation), і ми
+  -- пробуємо наступного вільного. Повтор при unique_violation = збіг номера запису.
+  for v_try in 1..5 loop
+    select m.id into v_master
+    from masters m
+    where m.visible
+      and p_service_id = any (m.service_ids)
+      and v_dow = any (m.work_days)
+      and (p_master_id is null or m.id = p_master_id)
+      and not exists (
+        select 1 from bookings b
+        where b.master_id = m.id and b.date = p_date and b.status <> 'cancelled'
+          and b.slot && int4range(p_start_min, p_start_min + s.duration_min)
+      )
+    order by m.sort
+    limit 1;
+    if v_master is null then raise exception 'slot_taken'; end if;
 
-  -- унікальний номер запису
-  loop
-    v_code := 'AV-' || (1000 + floor(random() * 9000))::int;
-    exit when not exists (select 1 from bookings where code = v_code);
+    -- номер запису: чотири цифри, а коли їх майже не лишилось, шість (як newCode у schedule.js)
+    v_code := null;
+    for i in 1..50 loop
+      v_code := 'AV-' || (1000 + floor(random() * 9000))::int;
+      exit when not exists (select 1 from bookings where code = v_code);
+      v_code := null;
+    end loop;
+    if v_code is null then v_code := 'AV-' || (100000 + floor(random() * 900000))::int; end if;
+
+    begin
+      insert into bookings (code, service_id, service_name, options_text, choices, master_id, date, start_min,
+                            duration_min, price, client_name, client_phone, comment, status, source)
+      values (v_code, s.id, s.name, v_text, coalesce(p_choices, '{}'::jsonb), v_master, p_date, p_start_min,
+              s.duration_min, v_price, trim(p_client_name), p_client_phone, left(trim(coalesce(p_comment, '')), 500),
+              'new', 'site');
+      return jsonb_build_object('code', v_code, 'master_id', v_master);
+    exception
+      when exclusion_violation or unique_violation then
+        null; -- хтось устиг між перевіркою і вставкою: наступна спроба бачить його запис
+    end;
   end loop;
-
-  insert into bookings (code, service_id, service_name, options_text, choices, master_id, date, start_min,
-                        duration_min, price, client_name, client_phone, comment, status, source)
-  values (v_code, s.id, s.name, v_text, coalesce(p_choices, '{}'::jsonb), v_master, p_date, p_start_min,
-          s.duration_min, v_price, trim(p_client_name), p_client_phone, coalesce(p_comment, ''), 'new', 'site');
-
-  return v_code;
-exception
-  -- хтось устиг записатися на цей час між перевіркою і вставкою
-  when exclusion_violation then raise exception 'slot_taken';
+  raise exception 'slot_taken';
 end;
 $$;
 
@@ -298,9 +355,12 @@ grant execute on function create_booking(text, text, date, int, jsonb, text, tex
 insert into storage.buckets (id, name, public) values ('photos', 'photos', true)
 on conflict (id) do nothing;
 
+drop policy if exists "photos: адмін завантажує" on storage.objects;
 create policy "photos: адмін завантажує" on storage.objects for insert
   with check (bucket_id = 'photos' and is_admin());
+drop policy if exists "photos: адмін змінює" on storage.objects;
 create policy "photos: адмін змінює" on storage.objects for update
   using (bucket_id = 'photos' and is_admin());
+drop policy if exists "photos: адмін видаляє" on storage.objects;
 create policy "photos: адмін видаляє" on storage.objects for delete
   using (bucket_id = 'photos' and is_admin());

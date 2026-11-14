@@ -102,7 +102,8 @@
   function freeSlots(o) {
     const hours = dayHours(o.date, o.settings, o.closures);
     if (!hours) return [];
-    const step = o.settings.slot_step || 30;
+    // крок із бази міг прийти зламаним (імпорт, DevTools): 0 або мінус означав би вічний цикл
+    const step = Math.max(5, Number(o.settings.slot_step) || 30);
     const working = o.masters.filter((m) => masterWorks(m, o.date));
     if (!working.length) return [];
 
@@ -211,10 +212,26 @@
       });
   }
 
+  /**
+   * Новий номер запису, якого ще немає серед taken (Set): "AV-1234".
+   * Після 50 невдалих спроб (майже всі 9000 чотиризначних зайняті) переходимо
+   * на шість цифр, щоб цикл точно завершився.
+   */
+  function newCode(taken) {
+    for (let i = 0; i < 50; i++) {
+      const code = "AV-" + Math.floor(1000 + Math.random() * 9000);
+      if (!taken.has(code)) return code;
+    }
+    let code;
+    do code = "AV-" + Math.floor(100000 + Math.random() * 900000);
+    while (taken.has(code));
+    return code;
+  }
+
   const api = {
     toMin, toHHMM, toISO, fromISO, addDays, weekday,
     dayHours, masterWorks, isActive, overlaps, conflicts, mastersFor, freeSlots, check,
-    priceFor, optionsText, hoursLines, openingHours, DAY_FULL,
+    priceFor, optionsText, hoursLines, openingHours, newCode, DAY_FULL,
   };
   root.AVERSchedule = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;

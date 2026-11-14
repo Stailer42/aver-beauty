@@ -48,7 +48,8 @@ const AVER = {
     ]);
     AVER.content = content;
     AVER.reviews = reviews.filter((r) => r.visible).map((r) => ({ author: r.author, service: r.service_label, text: r.text }));
-    const masterNames = new Map(masters.map((m) => [m.id, m.name]));
+    // у підписі до роботи лише видимі майстри: прихованого на сайті вже немає
+    const masterNames = new Map(masters.filter((m) => m.visible).map((m) => [m.id, m.name]));
     const toPhoto = async (p) => ({
       src: await AVERDB.fileUrl(p.src),
       width: p.width,

@@ -16,12 +16,15 @@
     "в", "у", "і", "й", "а", "та", "на", "з", "із", "зі", "до", "по", "за", "від", "що", "як", "не",
     "ні", "чи", "о", "без", "для", "про", "під", "над", "при", "я",
   ];
-  const shortRe = new RegExp("(?<=^|[\\s(«\"„/])(" + SHORT.join("|") + ")[ \\t]+", "giu");
+  // Без lookbehind (?<=...): старий Safari (iOS 16.3 і раніше) на ньому падає.
+  // Символ перед словом захоплюємо групою, а другий прохід ловить слова підряд ("а і в"),
+  // бо перший прохід "з'їдає" пробіл перед кожним другим із них.
+  const shortRe = new RegExp("(^|[\\s(«\"„/])(" + SHORT.join("|") + ")[ \\t]+", "giu");
+  const glueShort = (s) => s.replace(shortRe, "$1$2" + NB);
 
   function nbsp(text) {
     if (!text) return "";
-    return String(text)
-      .replace(shortRe, "$1" + NB)
+    return glueShort(glueShort(String(text)))
       .replace(/(\d)[ \t]+(?=\d{3}(?!\d))/g, "$1" + NB) // 1 200
       .replace(/(\d)[ \t]+(?=[\p{L}₴%])/gu, "$1" + NB) // 40 хвилин, 900 ₴
       .replace(/[ \t]+(?=[—–] )/g, NB); // тире не переноситься на новий рядок

@@ -103,7 +103,7 @@
             <form class="form" id="bk-form" novalidate>
               <div class="field" data-field="name">
                 <label for="f-name">Ім'я</label>
-                <input id="f-name" name="name" type="text" autocomplete="given-name" required aria-describedby="e-name">
+                <input id="f-name" name="name" type="text" autocomplete="given-name" maxlength="60" required aria-describedby="e-name">
                 <span class="field__error" id="e-name"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Вкажіть, як до&nbsp;вас звертатися</span>
               </div>
               <div class="field" data-field="phone">
@@ -113,7 +113,7 @@
               </div>
               <div class="field">
                 <label for="f-comment">Коментар, необов'язково</label>
-                <textarea id="f-comment" name="comment" rows="3" placeholder="Наприклад, побажання до процедури"></textarea>
+                <textarea id="f-comment" name="comment" rows="3" maxlength="500" placeholder="Наприклад, побажання до процедури"></textarea>
               </div>
               <div data-field="consent">
               <label class="check">

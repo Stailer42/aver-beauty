@@ -61,7 +61,16 @@
       selectService(service.id);
       goTo(2);
     } else {
-      selectCategory(bookableCats()[0].id);
+      const known = AVER.services.find((s) => s.id === preset);
+      selectCategory(known && bookableCats().some((c) => c.id === known.cat) ? known.cat : bookableCats()[0].id);
+      if (known) {
+        // послуга є на сайті, але зараз її не виконує жоден майстер
+        const p = document.createElement("p");
+        p.className = "empty";
+        p.setAttribute("role", "status");
+        p.textContent = "На «" + known.name + "» онлайн-запис зараз недоступний. Зателефонуйте нам, і ми підберемо час.";
+        $("[data-service-list]").before(p);
+      }
     }
     updateSummary();
   }
@@ -292,7 +301,8 @@
     }
 
     // залишаємо обрану дату, якщо вона досі доступна, інакше перший вільний день
-    const keep = state.date && !$('[data-date="' + state.date + '"]', list)?.disabled;
+    const kept = state.date && $('[data-date="' + state.date + '"]', list);
+    const keep = !!kept && !kept.disabled; // після півночі вчорашнього дня в списку вже немає
     selectDate(keep ? state.date : firstAvailable, true);
   }
 

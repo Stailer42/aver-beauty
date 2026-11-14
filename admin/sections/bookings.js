@@ -34,7 +34,19 @@
   // зміни з іншої вкладки (наприклад, новий запис із сайту) одразу видно тут
   AVERDB.onChange(async (msg) => {
     if (!root || !root.isConnected || !(msg.tables || []).includes("bookings")) return;
-    if (document.querySelector("dialog[open]")) return; // не заважаємо редагуванню
+    const open = document.querySelector("dialog[open]");
+    if (open) {
+      // не заважаємо редагуванню, але оновимо список, щойно діалог закриють
+      if (!open.dataset.refreshQueued) {
+        open.dataset.refreshQueued = "1";
+        open.addEventListener("close", async () => {
+          if (!root || !root.isConnected) return;
+          await load();
+          paint();
+        }, { once: true });
+      }
+      return;
+    }
     await load();
     paint();
   });
@@ -449,6 +461,9 @@
     let choices = { ...(row.choices || {}) };
     let dirty = false;
     let priceTouched = !isNew; // у збереженого запису ціну не перераховуємо, доки не змінять послугу чи параметри
+    // назву послуги й текст параметрів переписуємо лише тоді, коли їх справді змінили:
+    // інакше редагування коментаря перетерло б історію (послугу могли відтоді змінити)
+    let svcTouched = isNew;
 
     /* клієнт */
     const name = UI.field({ label: "Ім'я клієнта", value: row.client_name, autocomplete: "off" });
@@ -476,7 +491,8 @@
     });
     const svcGone = row.service_id && !data.service.has(row.service_id);
     if (svcGone || !row.service_id) {
-      svcSelect.insertBefore(h("option", { value: row.service_id || "", text: (row.service_name || "Послугу") + " (видалена)", selected: true }), svcSelect.firstChild);
+      const text = row.service_id ? (row.service_name || "Послуга") + " (видалена)" : "Послуг ще немає, додайте їх у розділі «Послуги»";
+      svcSelect.insertBefore(h("option", { value: row.service_id || "", text, selected: true }), svcSelect.firstChild);
     }
     const svcField = h("div", { class: "field field--select" }, h("label", { for: "bk-svc", text: "Послуга" }), svcSelect);
     const optsBox = h("div", { class: "adm-bkopts" });
@@ -533,6 +549,7 @@
         );
         sel.addEventListener("change", () => {
           choices[g.id] = Number(sel.value);
+          svcTouched = true;
           recalcPrice(true);
         });
         optsBox.appendChild(h("div", { class: "field field--select" }, h("label", { for: id, text: g.label }), sel));
@@ -549,6 +566,7 @@
     svcSelect.addEventListener("change", () => {
       const svc = currentService();
       choices = {};
+      svcTouched = true;
       if (svc) dur.input.value = String(svc.duration_min);
       drawMasters();
       drawOptions();
@@ -722,7 +740,7 @@
         if (!ok) return;
       }
 
-      const svc = currentService();
+      const svc = svcTouched ? currentService() : null;
       const now = new Date().toISOString();
       const out = {
         ...row,
@@ -748,22 +766,35 @@
       }
 
       saveBtn.disabled = true;
+      let final = out;
       try {
         await AVERDB.atomic("bookings", async (db) => {
           const all = await db.getAll("bookings");
-          // перевірка ще раз, на свіжих даних, у тій самій транзакції, що й запис
-          if (status !== "cancelled" && S.conflicts(all, out).length) throw Object.assign(new Error("slot"), { code: "slot_taken" });
           if (isNew) {
-            const codes = new Set(all.map((x) => x.code));
-            let code;
-            do code = "AV-" + Math.floor(1000 + Math.random() * 9000);
-            while (codes.has(code));
-            out.code = code;
+            out.code = S.newCode(new Set(all.map((x) => x.code)));
+          } else {
+            // запис могли змінити в іншій вкладці, поки форма була відкрита:
+            // беремо свіжий рядок і переносимо в нього лише те, що змінили тут
+            const cur = all.find((x) => x.id === out.id);
+            if (!cur) throw Object.assign(new Error("gone"), { code: "gone" });
+            final = { ...cur };
+            Object.keys(out).forEach((k) => {
+              if (JSON.stringify(out[k]) !== JSON.stringify(b[k])) final[k] = out[k];
+            });
           }
-          await db.put("bookings", out);
+          // перевірка ще раз, на свіжих даних, у тій самій транзакції, що й запис
+          if (final.status !== "cancelled" && S.conflicts(all, final).length) throw Object.assign(new Error("slot"), { code: "slot_taken" });
+          await db.put("bookings", final);
         });
       } catch (err) {
         saveBtn.disabled = false;
+        if (err.code === "gone") {
+          dirty = false;
+          dlg.close();
+          UI.toast("Цей запис щойно видалили в іншій вкладці", "error");
+          reload();
+          return;
+        }
         if (err.code === "slot_taken") {
           await load();
           evaluate();

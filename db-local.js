@@ -312,6 +312,14 @@
         tables[t] = rows;
       }
       if (!tables.users.length) throw new Error("У файлі немає жодного користувача, після імпорту не вдасться увійти");
+      // без цих рядків не відкриються ні сайт, ні адмінка
+      for (const t of ["settings", "content"]) {
+        if (!tables[t].some((r) => r.id === "main")) throw new Error("У файлі немає таблиці «" + t + "», це неповна копія");
+      }
+      const st = tables.settings.find((r) => r.id === "main");
+      if (!st.hours || typeof st.hours !== "object" || !Number.isInteger(st.slot_step) || st.slot_step < 5 || !Number.isInteger(st.days_ahead) || st.days_ahead < 1) {
+        throw new Error("Пошкоджені налаштування розкладу у файлі");
+      }
       for (const f of tables.files) f.blob = await dataURLToBlob(f.blob);
       await run(TABLES, "readwrite", async (o) => {
         for (const t of Object.keys(tables)) {
@@ -348,13 +356,25 @@
     async createBooking(p) {
       const S = window.AVERSchedule;
       const fail = (code) => Object.assign(new Error(code), { code });
-      if (String(p.client_name || "").trim().length < 2) throw fail("bad_name");
-      if (String(p.client_phone || "").replace(/\D/g, "").length !== 12) throw fail("bad_phone");
+      const name = String(p.client_name || "").trim();
+      if (name.length < 2 || name.length > 60) throw fail("bad_name");
+      const phone = String(p.client_phone || "");
+      if (phone.length > 20 || !/^380\d{9}$/.test(phone.replace(/\D/g, ""))) throw fail("bad_phone");
+      const comment = String(p.comment || "").trim().slice(0, 500);
       const [settings, closures, services, masters] = await Promise.all([
         api.single("settings"), api.list("closures"), api.list("services"), api.list("masters"),
       ]);
       const svc = services.find((s) => s.id === p.service_id && s.visible);
       if (!svc) throw fail("service_not_found");
+      // choices: { groupId: індекс варіанта }, лише справжні індекси
+      const choices = p.choices && typeof p.choices === "object" && !Array.isArray(p.choices) ? p.choices : {};
+      for (const g of svc.options || []) {
+        const i = choices[g.id] ?? 0;
+        if (!Number.isInteger(i) || i < 0 || i >= g.choices.length) throw fail("bad_choice");
+      }
+      // записатися можна на days_ahead днів, рахуючи сьогодні (як у формі запису)
+      const today = S.toISO(new Date());
+      if (typeof p.date !== "string" || p.date >= S.addDays(today, settings.days_ahead)) throw fail("slot_taken");
       const candidates = S.mastersFor(masters, svc.id, true).filter((m) => !p.master_id || m.id === p.master_id);
       const now = new Date().toISOString();
 
@@ -364,25 +384,22 @@
           .find((x) => x.start === p.start_min);
         if (!slot) throw fail("slot_taken");
         const masterId = slot.masters[0]; // обраний або перший вільний
-        const codes = new Set(all.map((x) => x.code));
-        let code;
-        do code = "AV-" + Math.floor(1000 + Math.random() * 9000);
-        while (codes.has(code));
+        const code = S.newCode(new Set(all.map((x) => x.code)));
         await db.put("bookings", {
           id: api.newId(),
           code,
           service_id: svc.id,
           service_name: svc.name,
-          options_text: S.optionsText(svc, p.choices),
-          choices: p.choices || {},
+          options_text: S.optionsText(svc, choices),
+          choices,
           master_id: masterId,
           date: p.date,
           start_min: p.start_min,
           duration_min: svc.duration_min,
-          price: S.priceFor(svc, p.choices),
-          client_name: String(p.client_name).trim(),
-          client_phone: p.client_phone,
-          comment: p.comment || "",
+          price: S.priceFor(svc, choices),
+          client_name: name,
+          client_phone: phone,
+          comment,
           status: "new",
           source: "site",
           created_at: now,
