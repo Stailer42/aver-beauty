@@ -179,9 +179,9 @@ AVER.getBusySlots = async function (dateISO, categoryId) {
 
   const rnd = seededRandom(dateISO + categoryId);
   const busy = [];
-  const blocks = 3 + Math.floor(rnd() * 4); // 3-6 зайнятих проміжків
+  const blocks = 2 + Math.floor(rnd() * 3); // 2-4 зайнятих проміжки
   for (let i = 0; i < blocks; i++) {
-    const len = (2 + Math.floor(rnd() * 4)) * 30; // 1-2.5 години
+    const len = (2 + Math.floor(rnd() * 3)) * 30; // 1-2 години
     const slots = (hours[1] - hours[0] - len) / 30;
     const start = hours[0] + Math.floor(rnd() * slots) * 30;
     busy.push({ start, end: start + len });

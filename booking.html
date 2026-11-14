@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Онлайн-запис: AVER, салон краси у Львові</title>
+  <meta name="description" content="Запишіться в салон краси AVER у Львові онлайн: оберіть процедуру, дату та вільний час за хвилину.">
+  <meta name="theme-color" content="#F7E6E9">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="uk_UA">
+  <meta property="og:site_name" content="AVER">
+  <meta property="og:title" content="Онлайн-запис в AVER">
+  <meta property="og:description" content="Оберіть процедуру, дату та вільний час за хвилину.">
+  <meta property="og:url" content="https://stailer42.github.io/aver-beauty/booking.html">
+  <meta property="og:image" content="https://stailer42.github.io/aver-beauty/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400&amp;display=swap">
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="script.js"></script>
+  <script src="data.js" defer></script>
+  <script src="booking.js" defer></script>
+</head>
+<body>
+  <svg width="0" height="0" class="sr-only" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Перейти до запису</a>
+
+  <header class="header">
+    <div class="container header__inner">
+      <div class="intro intro--logo">
+        <a class="logo" href="index.html" data-nav aria-label="AVER, на головну">AVER</a>
+      </div>
+      <div class="header__actions intro intro--nav">
+        <a class="header__phone ulink" href="tel:+380000000000">+380&nbsp;00&nbsp;000&nbsp;00&nbsp;00</a>
+        <a class="btn btn--ghost btn--sm" href="index.html" data-nav>
+          <span class="btn__fill"></span>
+          <svg class="icon icon--back" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          <span class="btn__label">На головну</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="bk" id="main">
+    <div class="container">
+      <div class="bk__head">
+        <span class="label intro intro--label">AVER / Львів, вул.&nbsp;Тестова,&nbsp;12</span>
+        <h1 class="intro intro--title">Онлайн-запис</h1>
+        <p class="intro intro--sub">Чотири кроки, близько хвилини. Показуємо лише вільний час.</p>
+      </div>
+
+      <ol class="steps intro intro--cta" data-steps>
+        <li class="is-current"><button type="button" data-goto="1"><span class="steps__num">01</span><span class="steps__name">Процедура</span></button></li>
+        <li><button type="button" data-goto="2" disabled><span class="steps__num">02</span><span class="steps__name">Деталі</span></button></li>
+        <li><button type="button" data-goto="3" disabled><span class="steps__num">03</span><span class="steps__name">Дата й&nbsp;час</span></button></li>
+        <li><button type="button" data-goto="4" disabled><span class="steps__num">04</span><span class="steps__name">Контакти</span></button></li>
+      </ol>
+
+      <div class="bk__grid intro intro--cta">
+        <div class="bk__main">
+          <!-- Крок 1: процедура -->
+          <section class="bk-step" data-step="1" aria-labelledby="st1">
+            <h2 id="st1" tabindex="-1">Оберіть процедуру</h2>
+            <div class="tabs" role="tablist" aria-label="Категорії послуг" data-cat-tabs></div>
+            <ul class="choices" data-service-list></ul>
+          </section>
+
+          <!-- Крок 2: деталі -->
+          <section class="bk-step" data-step="2" aria-labelledby="st2" hidden>
+            <h2 id="st2" tabindex="-1">Уточніть деталі</h2>
+            <div data-options></div>
+          </section>
+
+          <!-- Крок 3: дата й час -->
+          <section class="bk-step" data-step="3" aria-labelledby="st3" hidden>
+            <h2 id="st3" tabindex="-1">Оберіть дату й&nbsp;час</h2>
+            <ul class="days" data-days aria-label="Дні для запису"></ul>
+            <div data-slots aria-live="polite"></div>
+          </section>
+
+          <!-- Крок 4: контакти -->
+          <section class="bk-step" data-step="4" aria-labelledby="st4" hidden>
+            <h2 id="st4" tabindex="-1">Ваші контакти</h2>
+            <p class="bk-step__hint">Адміністратор зателефонує, щоб підтвердити запис. Це демо, тож дзвінка не&nbsp;буде.</p>
+            <form class="form" id="bk-form" novalidate>
+              <div class="field" data-field="name">
+                <label for="f-name">Ім'я</label>
+                <input id="f-name" name="name" type="text" autocomplete="given-name" required aria-describedby="e-name">
+                <span class="field__error" id="e-name"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Вкажіть, як до&nbsp;вас звертатися</span>
+              </div>
+              <div class="field" data-field="phone">
+                <label for="f-phone">Телефон</label>
+                <input id="f-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="+380 __ ___ __ __" required aria-describedby="e-phone">
+                <span class="field__error" id="e-phone"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Введіть номер повністю: 9&nbsp;цифр після +380</span>
+              </div>
+              <div class="field">
+                <label for="f-comment">Коментар, необов'язково</label>
+                <textarea id="f-comment" name="comment" rows="3" placeholder="Наприклад, бажаний майстер"></textarea>
+              </div>
+              <label class="check" data-field="consent">
+                <input type="checkbox" name="consent" required>
+                <span class="check__box"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span>Погоджуюся на&nbsp;обробку імені й&nbsp;телефону для&nbsp;підтвердження запису</span>
+              </label>
+            </form>
+          </section>
+
+          <!-- Успіх -->
+          <section class="done" data-done hidden aria-labelledby="done-title">
+            <svg class="done__mark" viewBox="0 0 84 84" aria-hidden="true">
+              <defs><mask id="check-mask"><rect class="done__reveal" x="20" y="22" width="44" height="38" fill="#fff"/></mask></defs>
+              <circle class="done__ring" cx="42" cy="42" r="41" fill="#F7E6E9"/>
+              <path d="M27 43l10 10 20-21" fill="none" stroke="#3B2B30" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" mask="url(#check-mask)"/>
+            </svg>
+            <h2 id="done-title" tabindex="-1">Дякуємо,<br><span data-done-name></span>!</h2>
+            <p data-done-text></p>
+            <p class="muted">Номер запису: <span data-done-id></span>. Демо-режим: запис збережено лише у&nbsp;цьому браузері, обраний час тепер позначено як&nbsp;зайнятий.</p>
+            <div class="done__actions">
+              <a class="btn btn--solid" href="index.html" data-nav>
+                <span class="btn__fill"></span><span class="btn__label">Повернутися на&nbsp;головну</span>
+              </a>
+              <a class="btn btn--ghost" href="booking.html">
+                <span class="btn__fill"></span><span class="btn__label">Записатися ще раз</span>
+              </a>
+            </div>
+          </section>
+
+          <div class="bk-nav" data-nav-bar>
+            <div class="bk-nav__total"><span>Разом</span><strong data-total-mobile>0&nbsp;₴</strong></div>
+            <button class="btn btn--ghost" type="button" data-back aria-label="Назад" hidden>
+              <span class="btn__fill"></span>
+              <svg class="icon icon--back" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+              <span class="btn__label">Назад</span>
+            </button>
+            <button class="btn btn--solid" type="button" data-next disabled>
+              <span class="btn__fill"></span><span class="btn__label" data-next-label>Обрати деталі</span>
+              <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <aside class="summary surface-pink" aria-labelledby="sum-title">
+          <h2 id="sum-title">Ваш запис</h2>
+          <dl>
+            <div><dt>Процедура</dt><dd data-sum="service">не обрано</dd></div>
+            <div><dt>Деталі</dt><dd data-sum="options">не обрано</dd></div>
+            <div><dt>Дата</dt><dd data-sum="date">не обрано</dd></div>
+            <div><dt>Час</dt><dd data-sum="time">не обрано</dd></div>
+            <div><dt>Тривалість</dt><dd data-sum="duration">не обрано</dd></div>
+          </dl>
+          <div class="summary__total"><span>Разом</span><strong data-total aria-live="polite">0&nbsp;₴</strong></div>
+          <p class="summary__note">Оплата в&nbsp;салоні після процедури. Скасувати чи перенести запис можна телефоном.</p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <div class="curtain" aria-hidden="true"></div>
+</body>
+</html>

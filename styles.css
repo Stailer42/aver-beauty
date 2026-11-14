@@ -74,6 +74,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* анімації зі зсувом убік не повинні створювати горизонтальний скрол */
+main {
+  overflow-x: clip;
+}
+
 html.menu-open body {
   overflow: hidden;
 }
@@ -143,6 +148,10 @@ p {
 
 .muted {
   color: var(--ink-75);
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .sr-only {
@@ -1461,6 +1470,11 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   gap: var(--s5);
 }
 
+/* без цього довгі горизонтальні стрічки (вкладки, дні) розпирають колонку */
+.bk__grid > * {
+  min-width: 0;
+}
+
 @media (min-width: 1000px) {
   .bk__grid {
     grid-template-columns: 1fr 380px;
@@ -1521,6 +1535,24 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   display: block;
   cursor: pointer;
 }
+
+/* список послуг і слоти з'являються сходинками */
+.choices li {
+  animation: panel-in 600ms var(--ease) both;
+}
+
+.choices li:nth-child(2) { animation-delay: 50ms; }
+.choices li:nth-child(3) { animation-delay: 100ms; }
+.choices li:nth-child(4) { animation-delay: 150ms; }
+.choices li:nth-child(5) { animation-delay: 200ms; }
+.choices li:nth-child(6) { animation-delay: 250ms; }
+
+.slots li:nth-child(2) .slot { animation-delay: 30ms; }
+.slots li:nth-child(3) .slot { animation-delay: 60ms; }
+.slots li:nth-child(4) .slot { animation-delay: 90ms; }
+.slots li:nth-child(5) .slot { animation-delay: 120ms; }
+.slots li:nth-child(6) .slot { animation-delay: 150ms; }
+.slots li:nth-child(n + 7) .slot { animation-delay: 180ms; }
 
 .choice input {
   position: absolute;
@@ -1634,7 +1666,7 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
   pointer-events: none;
 }
 
-.pill span {
+.pill > span {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1956,8 +1988,30 @@ html.menu-open .menu__list li:nth-child(5) a { transition-delay: 240ms; }
 }
 
 .bk-nav .btn--ghost {
+  flex: none;
   width: 52px;
   padding: 0;
+}
+
+.bk-nav .btn--solid {
+  min-width: 0;
+}
+
+.bk-nav .btn--solid .btn__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 420px) {
+  .bk-nav .btn--solid {
+    padding: 0 16px;
+  }
+  .bk-nav .btn--solid .icon {
+    display: none;
+  }
+  .bk-nav__total strong {
+    font-size: 16px;
+  }
 }
 
 .bk-nav .btn--ghost .btn__label {
@@ -2101,10 +2155,11 @@ html.js .rise {
   filter: blur(6px);
 }
 
+/* кінцевий filter: none, а не blur(0): інакше блок стає "рамкою" для position: fixed усередині */
 html.js .rise.is-in {
   opacity: 1;
   transform: none;
-  filter: blur(0);
+  filter: none;
   transition: opacity 900ms var(--ease), transform 900ms var(--ease), filter 900ms var(--ease);
 }
 
@@ -2129,7 +2184,7 @@ html.js .intro {
 html.js.is-ready .intro {
   opacity: 1;
   transform: none;
-  filter: blur(0);
+  filter: none;
   transition: opacity 900ms var(--ease), transform 900ms var(--ease), filter 900ms var(--ease);
 }
 
